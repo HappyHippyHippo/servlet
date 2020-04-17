@@ -10,308 +10,237 @@ import (
 )
 
 func Test_NewObservableFileSource(t *testing.T) {
-	t.Run("should return an error when missing the file system", func(t *testing.T) {
-		action := "Creating a new observable file source without the file system"
+	path := "path"
+	format := DecoderFormatYAML
+	expectedError := "error"
 
-		path := "__dummy_path__"
-		format := DecoderFormatYAML
-		expected := "Invalid nil 'fileSystem' argument"
-
+	t.Run("error when missing the file system adapter", func(t *testing.T) {
 		ctrl := gomock.NewController(t)
 		defer ctrl.Finish()
 
 		decoderFactory := NewMockDecoderFactory(ctrl)
 
-		stream, err := NewObservableFileSource(path, format, nil, decoderFactory)
-
-		if stream != nil {
-			t.Errorf("%s return an unexpected valid reference to a new observable file source", action)
-		}
-		if err == nil {
-			t.Errorf("%s didn't return a expected error", action)
-		} else {
-			if err.Error() != expected {
-				t.Errorf("%s didn't return the expected return error (%s), expected (%s)", action, err.Error(), expected)
-			}
+		if stream, err := NewObservableFileSource("path", DecoderFormatYAML, nil, decoderFactory); stream != nil {
+			defer stream.Close()
+			t.Errorf("returned a valid reference")
+		} else if err == nil {
+			t.Errorf("didn't return the expected error")
+		} else if err.Error() != "Invalid nil 'fileSystem' argument" {
+			t.Errorf("returned the (%v) error", err)
 		}
 	})
 
-	t.Run("should return an error when missing the decoder factory", func(t *testing.T) {
-		action := "Creating a new observable file source without the decoder factory"
-
-		path := "__dummy_path__"
-		format := DecoderFormatYAML
-		expected := "Invalid nil 'decoderFactory' argument"
-
+	t.Run("error when missing the decoder factory", func(t *testing.T) {
 		ctrl := gomock.NewController(t)
 		defer ctrl.Finish()
 
 		fileSystem := NewMockFs(ctrl)
 
-		stream, err := NewObservableFileSource(path, format, fileSystem, nil)
-
-		if stream != nil {
-			t.Errorf("%s return an unexpected valid reference to a new observable file source", action)
-		}
-		if err == nil {
-			t.Errorf("%s didn't return a expected error", action)
-		} else {
-			if err.Error() != expected {
-				t.Errorf("%s didn't return the expected return error (%s), expected (%s)", action, err.Error(), expected)
-			}
+		if stream, err := NewObservableFileSource("path", DecoderFormatYAML, fileSystem, nil); stream != nil {
+			defer stream.Close()
+			t.Errorf("returned a valid reference")
+		} else if err == nil {
+			t.Errorf("didn't return the expected error")
+		} else if err.Error() != "Invalid nil 'decoderFactory' argument" {
+			t.Errorf("returned the (%v) error", err)
 		}
 	})
 
-	t.Run("should return the error that may be raised when retrieving the file info", func(t *testing.T) {
-		action := "Creating a new observable file source when erroring when retrieving the file info"
-
-		path := "__dummy_path__"
-		format := DecoderFormatYAML
-		expected := "__dummy_error__"
-
+	t.Run("error that may be raised when retrieving the file info", func(t *testing.T) {
 		ctrl := gomock.NewController(t)
 		defer ctrl.Finish()
 
 		fileSystem := NewMockFs(ctrl)
-		fileSystem.EXPECT().Stat(path).Return(nil, fmt.Errorf(expected)).Times(1)
+		fileSystem.EXPECT().Stat(path).Return(nil, fmt.Errorf(expectedError)).Times(1)
 
 		decoderFactory := NewMockDecoderFactory(ctrl)
 
-		stream, err := NewObservableFileSource(path, format, fileSystem, decoderFactory)
-
-		if stream != nil {
-			stream.Close()
-			t.Errorf("%s return an unexpected valid reference to a new observable file source", action)
-		}
-
-		if err == nil {
-			t.Errorf("%s didn't return a expected error", action)
-		} else {
-			if err.Error() != expected {
-				t.Errorf("%s didn't return the expected return error (%s), expected (%s)", action, err.Error(), expected)
-			}
+		if stream, err := NewObservableFileSource(path, DecoderFormatYAML, fileSystem, decoderFactory); stream != nil {
+			defer stream.Close()
+			t.Errorf("returned a valid reference")
+		} else if err == nil {
+			t.Errorf("didn't return the expected error")
+		} else if err.Error() != expectedError {
+			t.Errorf("returned the (%v) error", err)
 		}
 	})
 
-	t.Run("should return the error that may be raised when opening the file", func(t *testing.T) {
-		action := "Creating a new observable file source when erroring opening the file"
-
-		path := "__dummy_path__"
-		format := DecoderFormatYAML
-		expected := "__dummy_error__"
-
+	t.Run("error that may be raised when opening the file", func(t *testing.T) {
 		ctrl := gomock.NewController(t)
 		defer ctrl.Finish()
 
 		fileInfo := NewMockFileInfo(ctrl)
 		fileInfo.EXPECT().ModTime().Return(time.Unix(0, 1)).Times(1)
-
 		fileSystem := NewMockFs(ctrl)
 		fileSystem.EXPECT().Stat(path).Return(fileInfo, nil).Times(1)
-		fileSystem.EXPECT().OpenFile(path, os.O_RDONLY, os.FileMode(0644)).Return(nil, fmt.Errorf(expected)).Times(1)
+		fileSystem.EXPECT().OpenFile(path, os.O_RDONLY, os.FileMode(0644)).Return(nil, fmt.Errorf(expectedError)).Times(1)
 
 		decoderFactory := NewMockDecoderFactory(ctrl)
 
-		stream, err := NewObservableFileSource(path, format, fileSystem, decoderFactory)
-
-		if stream != nil {
-			stream.Close()
-			t.Errorf("%s return an unexpected valid reference to a new observable file source", action)
-		}
-
-		if err == nil {
-			t.Errorf("%s didn't return a expected error", action)
-		} else {
-			if err.Error() != expected {
-				t.Errorf("%s didn't return the expected return error (%s), expected (%s)", action, err.Error(), expected)
-			}
+		if stream, err := NewObservableFileSource(path, DecoderFormatYAML, fileSystem, decoderFactory); stream != nil {
+			defer stream.Close()
+			t.Errorf("returned a valid reference")
+		} else if err == nil {
+			t.Errorf("didn't return the expected error")
+		} else if err.Error() != expectedError {
+			t.Errorf("returned the (%v) error", err)
 		}
 	})
 
-	t.Run("should return the error that may be raised when creating the decoder", func(t *testing.T) {
-		action := "Creating a new observable file source when erroing when creating the decoder"
-
-		path := "__dummy_path__"
-		format := DecoderFormatYAML
-		expected := "__dummy_error__"
-
+	t.Run("error that may be raised when creating the decoder", func(t *testing.T) {
 		ctrl := gomock.NewController(t)
 		defer ctrl.Finish()
 
+		file := NewMockFile(ctrl)
 		fileInfo := NewMockFileInfo(ctrl)
 		fileInfo.EXPECT().ModTime().Return(time.Unix(0, 1)).Times(1)
-
-		file := NewMockFile(ctrl)
-
 		fileSystem := NewMockFs(ctrl)
 		fileSystem.EXPECT().Stat(path).Return(fileInfo, nil).Times(1)
 		fileSystem.EXPECT().OpenFile(path, os.O_RDONLY, os.FileMode(0644)).Return(file, nil).Times(1)
 
 		decoderFactory := NewMockDecoderFactory(ctrl)
-		decoderFactory.EXPECT().Create(format, file).Return(nil, fmt.Errorf(expected)).Times(1)
+		decoderFactory.EXPECT().Create(format, file).Return(nil, fmt.Errorf(expectedError)).Times(1)
 
-		stream, err := NewObservableFileSource(path, format, fileSystem, decoderFactory)
-
-		if stream != nil {
-			stream.Close()
-			t.Errorf("%s return an unexpected valid reference to a new observable file source", action)
-		}
-
-		if err == nil {
-			t.Errorf("%s didn't return a expected error", action)
-		} else {
-			if err.Error() != expected {
-				t.Errorf("%s didn't return the expected return error (%s), expected (%s)", action, err.Error(), expected)
-			}
+		if stream, err := NewObservableFileSource(path, format, fileSystem, decoderFactory); stream != nil {
+			defer stream.Close()
+			t.Errorf("returned a valid reference")
+		} else if err == nil {
+			t.Errorf("didn't return the expected error")
+		} else if err.Error() != expectedError {
+			t.Errorf("returned the (%v) error", err)
 		}
 	})
 
-	t.Run("should return the error that may be raised when running the decoder", func(t *testing.T) {
-		action := "Creating a new observable file source when erroing when running the decoder"
-
-		path := "__dummy_path__"
-		format := DecoderFormatYAML
-		expected := "__dummy_error__"
-
+	t.Run("error that may be raised when running the decoder", func(t *testing.T) {
 		ctrl := gomock.NewController(t)
 		defer ctrl.Finish()
 
+		file := NewMockFile(ctrl)
 		fileInfo := NewMockFileInfo(ctrl)
 		fileInfo.EXPECT().ModTime().Return(time.Unix(0, 1)).Times(1)
-
-		file := NewMockFile(ctrl)
-
 		fileSystem := NewMockFs(ctrl)
 		fileSystem.EXPECT().Stat(path).Return(fileInfo, nil).Times(1)
 		fileSystem.EXPECT().OpenFile(path, os.O_RDONLY, os.FileMode(0644)).Return(file, nil).Times(1)
 
 		decoder := NewMockDecoder(ctrl)
-		decoder.EXPECT().Decode().Return(nil, fmt.Errorf(expected)).Times(1)
+		decoder.EXPECT().Decode().Return(nil, fmt.Errorf(expectedError)).Times(1)
 		decoder.EXPECT().Close().Times(1)
-
 		decoderFactory := NewMockDecoderFactory(ctrl)
 		decoderFactory.EXPECT().Create(format, file).Return(decoder, nil).Times(1)
 
-		stream, err := NewObservableFileSource(path, format, fileSystem, decoderFactory)
-
-		if stream != nil {
-			stream.Close()
-			t.Errorf("%s return an unexpected valid reference to a new observable file source", action)
-		}
-
-		if err == nil {
-			t.Errorf("%s didn't return a expected error", action)
-		} else {
-			if err.Error() != expected {
-				t.Errorf("%s didn't return the expected return error (%s), expected (%s)", action, err.Error(), expected)
-			}
+		if stream, err := NewObservableFileSource(path, format, fileSystem, decoderFactory); stream != nil {
+			defer stream.Close()
+			t.Errorf("returned a valid reference")
+		} else if err == nil {
+			t.Errorf("didn't return the expected error")
+		} else if err.Error() != expectedError {
+			t.Errorf("returned the (%v) error", err)
 		}
 	})
 
-	t.Run("should correctly create the config observable file source", func(t *testing.T) {
-		action := "Creating a new file source"
-
-		path := "__dummy_path__"
-		format := DecoderFormatYAML
-
+	t.Run("create the config observable file source", func(t *testing.T) {
 		ctrl := gomock.NewController(t)
 		defer ctrl.Finish()
 
+		file := NewMockFile(ctrl)
 		fileInfo := NewMockFileInfo(ctrl)
 		fileInfo.EXPECT().ModTime().Return(time.Unix(0, 1)).Times(1)
-
-		file := NewMockFile(ctrl)
-
 		fileSystem := NewMockFs(ctrl)
 		fileSystem.EXPECT().Stat(path).Return(fileInfo, nil).Times(1)
 		fileSystem.EXPECT().OpenFile(path, os.O_RDONLY, os.FileMode(0644)).Return(file, nil).Times(1)
 
-		partial := NewMockPartial(ctrl)
-
+		conf := NewMockPartial(ctrl)
 		decoder := NewMockDecoder(ctrl)
-		decoder.EXPECT().Decode().Return(partial, nil).Times(1)
+		decoder.EXPECT().Decode().Return(conf, nil).Times(1)
 		decoder.EXPECT().Close().Times(1)
-
 		decoderFactory := NewMockDecoderFactory(ctrl)
 		decoderFactory.EXPECT().Create(format, file).Return(decoder, nil).Times(1)
 
-		stream, err := NewObservableFileSource(path, format, fileSystem, decoderFactory)
-
-		if stream == nil {
-			t.Errorf("%s didn't returned the expected config observable file source", action)
+		if stream, err := NewObservableFileSource(path, format, fileSystem, decoderFactory); stream == nil {
+			t.Errorf("didn't return a valid reference")
+		} else {
+			defer stream.Close()
+			if err != nil {
+				t.Errorf("returned the (%v) error", err)
+			}
 		}
+	})
+
+	t.Run("store the decoded partial", func(t *testing.T) {
+		ctrl := gomock.NewController(t)
+		defer ctrl.Finish()
+
+		file := NewMockFile(ctrl)
+		fileInfo := NewMockFileInfo(ctrl)
+		fileInfo.EXPECT().ModTime().Return(time.Unix(0, 1)).Times(1)
+		fileSystem := NewMockFs(ctrl)
+		fileSystem.EXPECT().Stat(path).Return(fileInfo, nil).Times(1)
+		fileSystem.EXPECT().OpenFile(path, os.O_RDONLY, os.FileMode(0644)).Return(file, nil).Times(1)
+
+		conf := NewMockPartial(ctrl)
+		decoder := NewMockDecoder(ctrl)
+		decoder.EXPECT().Decode().Return(conf, nil).Times(1)
+		decoder.EXPECT().Close().Times(1)
+		decoderFactory := NewMockDecoderFactory(ctrl)
+		decoderFactory.EXPECT().Create(format, file).Return(decoder, nil).Times(1)
+
+		stream, _ := NewObservableFileSource(path, format, fileSystem, decoderFactory)
 		defer stream.Close()
-		if err != nil {
-			t.Errorf("%s return the unexpected error : %v", action, err)
+
+		if check := stream.(*observableFileSource).partial; check != conf {
+			t.Errorf("didn't correctly stored the decoded partial")
 		}
 	})
 }
 
 func Test_ObservableFileSource_Reload(t *testing.T) {
-	t.Run("should return false if fail to retrieving the file info", func(t *testing.T) {
-		action := "Reloading when failing to retrieve the file info"
+	path := "path"
+	format := DecoderFormatYAML
+	expectedError := "error"
 
-		path := "__dummy_path__"
-		format := DecoderFormatYAML
-		expected := "__dummy_error__"
-
+	t.Run("error if fail to retrieving the file info", func(t *testing.T) {
 		ctrl := gomock.NewController(t)
 		defer ctrl.Finish()
 
+		file := NewMockFile(ctrl)
 		fileInfo := NewMockFileInfo(ctrl)
 		fileInfo.EXPECT().ModTime().Return(time.Unix(0, 1)).Times(1)
-
-		file := NewMockFile(ctrl)
-
 		fileSystem := NewMockFs(ctrl)
 		gomock.InOrder(
 			fileSystem.EXPECT().Stat(path).Return(fileInfo, nil),
-			fileSystem.EXPECT().Stat(path).Return(nil, fmt.Errorf(expected)),
+			fileSystem.EXPECT().Stat(path).Return(nil, fmt.Errorf(expectedError)),
 		)
 		fileSystem.EXPECT().OpenFile(path, os.O_RDONLY, os.FileMode(0644)).Return(file, nil).Times(1)
 
-		partial := NewMockPartial(ctrl)
-
+		conf := NewMockPartial(ctrl)
 		decoder := NewMockDecoder(ctrl)
-		decoder.EXPECT().Decode().Return(partial, nil).Times(1)
+		decoder.EXPECT().Decode().Return(conf, nil).Times(1)
 		decoder.EXPECT().Close().Times(1)
-
 		decoderFactory := NewMockDecoderFactory(ctrl)
 		decoderFactory.EXPECT().Create(format, file).Return(decoder, nil).Times(1)
 
 		stream, _ := NewObservableFileSource(path, format, fileSystem, decoderFactory)
+		defer stream.Close()
 
-		reloaded, err := stream.Reload()
-		if reloaded {
-			t.Errorf("%s unexpectedly flagged that was reloaded", action)
-		}
-		if err == nil {
-			t.Errorf("%s didn't returned the expected error, returned nil", action)
-		} else {
-			if err.Error() != expected {
-				t.Errorf("%s didn't return the expected return error (%s), expected (%s)", action, err.Error(), expected)
-			}
+		if reloaded, err := stream.Reload(); reloaded {
+			t.Errorf("flagged that was reloaded")
+		} else if err == nil {
+			t.Errorf("didn't return the expected error")
+		} else if err.Error() != expectedError {
+			t.Errorf("returned the (%v) error", err)
 		}
 	})
 
-	t.Run("should return false if fail to load the file content", func(t *testing.T) {
-		action := "Reloading when failing to load the file content"
-
-		path := "__dummy_path__"
-		format := DecoderFormatYAML
-		expected := "__dummy_error__"
-
+	t.Run("error if fails to load the file content", func(t *testing.T) {
 		ctrl := gomock.NewController(t)
 		defer ctrl.Finish()
 
+		file := NewMockFile(ctrl)
 		fileInfo := NewMockFileInfo(ctrl)
 		gomock.InOrder(
 			fileInfo.EXPECT().ModTime().Return(time.Unix(0, 1)),
 			fileInfo.EXPECT().ModTime().Return(time.Unix(0, 2)),
 		)
-
-		file := NewMockFile(ctrl)
-
 		fileSystem := NewMockFs(ctrl)
 		gomock.InOrder(
 			fileSystem.EXPECT().Stat(path).Return(fileInfo, nil),
@@ -319,109 +248,82 @@ func Test_ObservableFileSource_Reload(t *testing.T) {
 		)
 		gomock.InOrder(
 			fileSystem.EXPECT().OpenFile(path, os.O_RDONLY, os.FileMode(0644)).Return(file, nil),
-			fileSystem.EXPECT().OpenFile(path, os.O_RDONLY, os.FileMode(0644)).Return(nil, fmt.Errorf(expected)),
+			fileSystem.EXPECT().OpenFile(path, os.O_RDONLY, os.FileMode(0644)).Return(nil, fmt.Errorf(expectedError)),
 		)
 
-		partial := NewMockPartial(ctrl)
-
+		conf := NewMockPartial(ctrl)
 		decoder := NewMockDecoder(ctrl)
-		decoder.EXPECT().Decode().Return(partial, nil).Times(1)
+		decoder.EXPECT().Decode().Return(conf, nil).Times(1)
 		decoder.EXPECT().Close().Times(1)
-
 		decoderFactory := NewMockDecoderFactory(ctrl)
 		decoderFactory.EXPECT().Create(format, file).Return(decoder, nil).Times(1)
 
 		stream, _ := NewObservableFileSource(path, format, fileSystem, decoderFactory)
+		defer stream.Close()
 
-		reloaded, err := stream.Reload()
-		if reloaded {
-			t.Errorf("%s unexpectedly flagged that was reloaded", action)
-		}
-		if err == nil {
-			t.Errorf("%s didn't returned the expected error, returned nil", action)
-		} else {
-			if err.Error() != expected {
-				t.Errorf("%s didn't return the expected return error (%s), expected (%s)", action, err.Error(), expected)
-			}
+		if reloaded, err := stream.Reload(); reloaded {
+			t.Errorf("flagged that was reloaded")
+		} else if err == nil {
+			t.Errorf("didn't return the expected error")
+		} else if err.Error() != expectedError {
+			t.Errorf("returned the (%v) error", err)
 		}
 	})
 
-	t.Run("should prevent reload of an unchanged source", func(t *testing.T) {
-		action := "Reloading an unchanged source"
-
-		path := "__dummy_path__"
-		format := DecoderFormatYAML
-
+	t.Run("prevent reload of a unchanged source", func(t *testing.T) {
 		ctrl := gomock.NewController(t)
 		defer ctrl.Finish()
 
+		file := NewMockFile(ctrl)
 		fileInfo := NewMockFileInfo(ctrl)
 		fileInfo.EXPECT().ModTime().Return(time.Unix(0, 1)).Times(2)
-
-		file := NewMockFile(ctrl)
-
 		fileSystem := NewMockFs(ctrl)
 		fileSystem.EXPECT().Stat(path).Return(fileInfo, nil).Times(2)
 		fileSystem.EXPECT().OpenFile(path, os.O_RDONLY, os.FileMode(0644)).Return(file, nil).Times(1)
 
-		partial := NewMockPartial(ctrl)
-
+		conf := NewMockPartial(ctrl)
 		decoder := NewMockDecoder(ctrl)
-		decoder.EXPECT().Decode().Return(partial, nil).Times(1)
+		decoder.EXPECT().Decode().Return(conf, nil).Times(1)
 		decoder.EXPECT().Close().Times(1)
-
 		decoderFactory := NewMockDecoderFactory(ctrl)
 		decoderFactory.EXPECT().Create(format, file).Return(decoder, nil).Times(1)
 
 		stream, _ := NewObservableFileSource(path, format, fileSystem, decoderFactory)
 
-		reloaded, err := stream.Reload()
-		if reloaded {
-			t.Errorf("%s unexpectedly flagged that was reloaded", action)
-		}
-		if err != nil {
-			t.Errorf("%s returned the unexpected error : %v", action, err)
+		if reloaded, err := stream.Reload(); reloaded {
+			t.Errorf("flagged that was reloaded")
+		} else if err != nil {
+			t.Errorf("returned the (%v) error", err)
 		}
 	})
 
-	t.Run("should reload of a changed source", func(t *testing.T) {
-		action := "Reloading an changed source"
-
-		path := "__dummy_path__"
-		format := DecoderFormatYAML
-
+	t.Run("should reload a changed source", func(t *testing.T) {
 		ctrl := gomock.NewController(t)
 		defer ctrl.Finish()
 
+		file := NewMockFile(ctrl)
 		fileInfo := NewMockFileInfo(ctrl)
 		gomock.InOrder(
 			fileInfo.EXPECT().ModTime().Return(time.Unix(0, 1)),
 			fileInfo.EXPECT().ModTime().Return(time.Unix(0, 2)),
 		)
-
-		file := NewMockFile(ctrl)
-
 		fileSystem := NewMockFs(ctrl)
 		fileSystem.EXPECT().Stat(path).Return(fileInfo, nil).Times(2)
 		fileSystem.EXPECT().OpenFile(path, os.O_RDONLY, os.FileMode(0644)).Return(file, nil).Times(2)
 
-		partial := NewMockPartial(ctrl)
-
+		conf := NewMockPartial(ctrl)
 		decoder := NewMockDecoder(ctrl)
-		decoder.EXPECT().Decode().Return(partial, nil).Times(2)
+		decoder.EXPECT().Decode().Return(conf, nil).Times(2)
 		decoder.EXPECT().Close().Times(2)
-
 		decoderFactory := NewMockDecoderFactory(ctrl)
 		decoderFactory.EXPECT().Create(format, file).Return(decoder, nil).Times(2)
 
 		stream, _ := NewObservableFileSource(path, format, fileSystem, decoderFactory)
 
-		reloaded, err := stream.Reload()
-		if !reloaded {
-			t.Errorf("%s unexpectedly flagged that was not reloaded", action)
-		}
-		if err != nil {
-			t.Errorf("%s returned the unexpected error : %v", action, err)
+		if reloaded, err := stream.Reload(); !reloaded {
+			t.Errorf("flagged that was not reloaded")
+		} else if err != nil {
+			t.Errorf("returned the (%v) error", err)
 		}
 	})
 }

@@ -6,33 +6,32 @@ import (
 	"github.com/happyhippyhippo/servlet/config"
 )
 
-// Loader interface defines the methods of a logging loader instance.
+// Loader interface used to define the methods of a logger loader.
+// This loader will reads a configuration partial with the 'log.streams'
+// path and creates the logging streams described in the entries by the
+// usage of the stream factory. After the creation of the streans instances,
+// they will be added to a log managing instance.
 type Loader interface {
 	Load(c config.Config) error
 }
 
 type loader struct {
-	formatterFactory FormatterFactory
-	streamFactory    StreamFactory
-	logger           Logger
+	logger        Logger
+	streamFactory StreamFactory
 }
 
 // NewLoader create a new logging configuration loader instance.
-func NewLoader(formatterFactory FormatterFactory, streamFactory StreamFactory, logger Logger) (Loader, error) {
-	if formatterFactory == nil {
-		return nil, fmt.Errorf("Invalid nil 'formatterFactory' argument")
+func NewLoader(logger Logger, streamFactory StreamFactory) (Loader, error) {
+	if logger == nil {
+		return nil, fmt.Errorf("Invalid nil 'logger' argument")
 	}
 	if streamFactory == nil {
 		return nil, fmt.Errorf("Invalid nil 'streamFactory' argument")
 	}
-	if logger == nil {
-		return nil, fmt.Errorf("Invalid nil 'logger' argument")
-	}
 
 	return &loader{
-		formatterFactory: formatterFactory,
-		streamFactory:    streamFactory,
-		logger:           logger,
+		logger:        logger,
+		streamFactory: streamFactory,
 	}, nil
 }
 
@@ -49,8 +48,12 @@ func (l loader) Load(c config.Config) (err error) {
 		}
 	}()
 
-	entries := c.Get("log.streams").([]interface{})
-	for _, entry := range entries {
+	entries := c.Get("log.streams")
+	if entries == nil {
+		return nil
+	}
+
+	for _, entry := range entries.([]interface{}) {
 		if err = l.load(entry.(config.Partial)); err != nil {
 			return err
 		}

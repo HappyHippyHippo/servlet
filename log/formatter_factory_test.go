@@ -9,111 +9,80 @@ import (
 
 func Test_NewFormatterFactory(t *testing.T) {
 	t.Run("create a new log formatter factory", func(t *testing.T) {
-		action := "Creating a new log formatter factory"
-
-		factory := NewFormatterFactory()
-
-		if factory == nil {
-			t.Errorf("%s didn't return a valid reference to a new log formatter factory", action)
+		if NewFormatterFactory() == nil {
+			t.Errorf("return a valid reference")
 		}
 	})
 }
 
 func Test_FormatterFactory_Register(t *testing.T) {
-	t.Run("should return a error if passing a nil strategy", func(t *testing.T) {
-		action := "Registering a nil strategy"
-
-		expected := "Invalid nil 'strategy' argument"
-
+	t.Run("error if passing a nil strategy", func(t *testing.T) {
 		ctrl := gomock.NewController(t)
 		defer ctrl.Finish()
 
 		factory := NewFormatterFactory()
 
-		err := factory.Register(nil)
-		if err == nil {
-			t.Errorf("%s didn't return the expected error", action)
-		} else {
-			if check := err.Error(); check != expected {
-				t.Errorf("%s return the error (%s) when expecting (%s)", action, check, expected)
-			}
+		if err := factory.Register(nil); err == nil {
+			t.Errorf("didn't return the expected error")
+		} else if err.Error() != "Invalid nil 'strategy' argument" {
+			t.Errorf("returned the (%v) error", err)
 		}
 	})
 
-	t.Run("should correctly register the formatter factory strategy", func(t *testing.T) {
-		action := "Registering a formatter factory strategy"
-
+	t.Run("register the formatter factory strategy", func(t *testing.T) {
 		ctrl := gomock.NewController(t)
 		defer ctrl.Finish()
 
 		strategy := NewMockFormatterFactoryStrategy(ctrl)
-
 		factory := NewFormatterFactory()
 
-		err := factory.Register(strategy)
-		if err != nil {
-			t.Errorf("%s return a unexpected error : %s", action, err.Error())
-		}
-
-		if factory.(*formatterFactory).strategies[0] != strategy {
-			t.Errorf("%s didn't stored the strategy in the factory", action)
+		if err := factory.Register(strategy); err != nil {
+			t.Errorf("returned the (%v) error", err)
+		} else if factory.(*formatterFactory).strategies[0] != strategy {
+			t.Errorf("didn't stored the strategy")
 		}
 	})
 }
 
 func Test_FormatterFactory_Create(t *testing.T) {
-	t.Run("should return a error signaling that the format is unrecognized", func(t *testing.T) {
-		action := "Creating a invalid format formatter"
+	format := "format"
+	expectedError := "Unrecognized format type : format"
 
-		format := "__format__"
-		expected := "Unrecognized format type : __format__"
-
+	t.Run("error if the format is unrecognized", func(t *testing.T) {
 		ctrl := gomock.NewController(t)
 		defer ctrl.Finish()
+
+		factory := NewFormatterFactory()
 
 		strategy := NewMockFormatterFactoryStrategy(ctrl)
 		strategy.EXPECT().Accept(format).Return(false).Times(1)
-
-		factory := NewFormatterFactory()
 		factory.Register(strategy)
 
-		formatter, err := factory.Create(format)
-		if err == nil {
-			t.Errorf("%s didn't return the expected error", action)
-		} else {
-			if check := err.Error(); check != expected {
-				t.Errorf("%s returned the error (%s) when expected (%s)", action, check, expected)
-			}
-		}
-		if formatter != nil {
-			t.Errorf("%s returned an unexpected yaml config formatter reference", action)
+		if result, err := factory.Create(format); result != nil {
+			t.Errorf("returned a valid reference")
+		} else if err == nil {
+			t.Errorf("didn't return the expected error")
+		} else if err.Error() != expectedError {
+			t.Errorf("returned the (%v) error", err)
 		}
 	})
 
-	t.Run("should create the requested yaml config formatter", func(t *testing.T) {
-		action := "Creating a new yaml formatter"
-
-		format := "__format__"
-
+	t.Run("create the formatter", func(t *testing.T) {
 		ctrl := gomock.NewController(t)
 		defer ctrl.Finish()
 
-		formatter := NewMockFormatter(ctrl)
+		factory := NewFormatterFactory()
 
+		formatter := NewMockFormatter(ctrl)
 		strategy := NewMockFormatterFactoryStrategy(ctrl)
 		strategy.EXPECT().Accept(format).Return(true).Times(1)
 		strategy.EXPECT().Create().Return(formatter, nil).Times(1)
-
-		factory := NewFormatterFactory()
 		factory.Register(strategy)
 
-		check, err := factory.Create(format)
-		if err != nil {
-			t.Errorf("%s return the unexpected error : %v", action, err)
-		}
-
-		if !reflect.DeepEqual(check, formatter) {
-			t.Errorf("%s didn't returned the created strategy", action)
+		if formatter, err := factory.Create(format); err != nil {
+			t.Errorf("returned the (%v) error", err)
+		} else if !reflect.DeepEqual(formatter, formatter) {
+			t.Errorf("didn't returned the formatter")
 		}
 	})
 }

@@ -1,10 +1,10 @@
 package config
 
 import (
+	"reflect"
 	"testing"
-	"time"
 
-	"github.com/golang/mock/gomock"
+	gomock "github.com/golang/mock/gomock"
 	"github.com/happyhippyhippo/servlet"
 	"github.com/happyhippyhippo/servlet/sys"
 )
@@ -27,203 +27,95 @@ func (m *containerFactoryMatcher) String() string {
 }
 
 func Test_NewProvider(t *testing.T) {
-	t.Run("should creates a new config provider with default parameters if none are given", func(t *testing.T) {
-		action := "Creating a new config provider without parameters"
-
-		provider := NewProvider(nil).(*provider)
-		if provider == nil {
-			t.Errorf("%s didn't return a valid reference to a new config provider", action)
-		}
-
-		if check := provider.params.id; check != ContainerID {
-			t.Errorf("%s didn't store the expected (%v) config id, returned (%v)", action, ContainerID, check)
-		}
-		if check := provider.params.fileSystemID; check != sys.ContainerFileSystemID {
-			t.Errorf("%s didn't store the expected (%v) file system id, returned (%v)", action, sys.ContainerFileSystemID, check)
-		}
-		if check := provider.params.loaderID; check != ContainerLoaderID {
-			t.Errorf("%s didn't store the expected (%v) loader id, returned (%v)", action, ContainerLoaderID, check)
-		}
-		if check := provider.params.sourceFactoryID; check != ContainerSourceFactoryID {
-			t.Errorf("%s didn't store the expected (%v) source factory id, returned (%v)", action, ContainerSourceFactoryID, check)
-		}
-		if check := provider.params.decoderFactoryID; check != ContainerDecoderFactoryID {
-			t.Errorf("%s didn't store the expected (%v) decoder factory id, returned (%v)", action, ContainerDecoderFactoryID, check)
-		}
-		if check := provider.params.observeFrequency; check != ContainerObserveFrequency {
-			t.Errorf("%s didn't store the expected (%v) observe frequency, returned (%v)", action, ContainerObserveFrequency, check)
-		}
-		if check := provider.params.baseSourceID; check != ContainerBaseSourceID {
-			t.Errorf("%s didn't store the expected (%v) base source id, returned (%v)", action, ContainerBaseSourceID, check)
-		}
-		if check := provider.params.baseSourcePath; check != ContainerBaseSourcePath {
-			t.Errorf("%s didn't store the expected (%v) base source path, returned (%v)", action, ContainerBaseSourcePath, check)
-		}
-		if check := provider.params.baseSourceFormat; check != ContainerBaseSourceFormat {
-			t.Errorf("%s didn't store the expected (%v) base source format, returned (%v)", action, ContainerBaseSourceFormat, check)
-		}
-	})
-
-	t.Run("should creates a new config provider with given parameters", func(t *testing.T) {
-		action := "Creating a new config provider with parameters"
-
-		id := "__dummy_id__"
-		fileSystemID := "__dummy_file_system_id__"
-		loaderID := "__dummy_cloader_id__"
-		sourceFactoryID := "__dummy_source_factory_id__"
-		decoderFactoryID := "__dummy_decoder_factory_id__"
-		observeFrequency := time.Second * 11
-		baseSourceID := "__dummy_base_source_id__"
-		baseSourcePath := "__dummy_base_source_path__"
-		baseSourceFormat := "__dummy_base_source_format__"
-
-		ctrl := gomock.NewController(t)
-		defer ctrl.Finish()
-
-		parameters := NewMockProviderParameters(ctrl)
-		parameters.EXPECT().GetID().Return(id).Times(1)
-		parameters.EXPECT().GetFileSystemID().Return(fileSystemID).Times(1)
-		parameters.EXPECT().GetLoaderID().Return(loaderID).Times(1)
-		parameters.EXPECT().GetSourceFactoryID().Return(sourceFactoryID).Times(1)
-		parameters.EXPECT().GetDecoderFactoryID().Return(decoderFactoryID).Times(1)
-		parameters.EXPECT().GetObserveFrequency().Return(observeFrequency).Times(1)
-		parameters.EXPECT().GetBaseSourceID().Return(baseSourceID).Times(1)
-		parameters.EXPECT().GetBaseSourcePath().Return(baseSourcePath).Times(1)
-		parameters.EXPECT().GetBaseSourceFormat().Return(baseSourceFormat).Times(1)
-
-		provider := NewProvider(parameters).(*provider)
-		if provider == nil {
-			t.Errorf("%s didn't return a valid reference to a new config provider", action)
-		}
-		if check := provider.params.id; check != id {
-			t.Errorf("%s didn't store the expected (%v) config id, returned (%v)", action, id, check)
-		}
-		if check := provider.params.fileSystemID; check != fileSystemID {
-			t.Errorf("%s didn't store the expected (%v) file system id, returned (%v)", action, fileSystemID, check)
-		}
-		if check := provider.params.loaderID; check != loaderID {
-			t.Errorf("%s didn't store the expected (%v) loader id, returned (%v)", action, loaderID, check)
-		}
-		if check := provider.params.sourceFactoryID; check != sourceFactoryID {
-			t.Errorf("%s didn't store the expected (%v) source factory id, returned (%v)", action, sourceFactoryID, check)
-		}
-		if check := provider.params.decoderFactoryID; check != decoderFactoryID {
-			t.Errorf("%s didn't store the expected (%v) decoder factory id, returned (%v)", action, decoderFactoryID, check)
-		}
-		if check := provider.params.observeFrequency; check != observeFrequency {
-			t.Errorf("%s didn't store the expected (%v) observe frequency, returned (%v)", action, observeFrequency, check)
-		}
-		if check := provider.params.baseSourceID; check != baseSourceID {
-			t.Errorf("%s didn't store the expected (%v) base source id, returned (%v)", action, baseSourceID, check)
-		}
-		if check := provider.params.baseSourcePath; check != baseSourcePath {
-			t.Errorf("%s didn't store the expected (%v) base source path, returned (%v)", action, baseSourcePath, check)
-		}
-		if check := provider.params.baseSourceFormat; check != baseSourceFormat {
-			t.Errorf("%s didn't store the expected (%v) base source path, returned (%v)", action, baseSourceFormat, check)
+	t.Run("creates a new provider", func(t *testing.T) {
+		parameters := NewDefaultParameters()
+		if provider := NewProvider(parameters).(*provider); provider == nil {
+			t.Errorf("didn't return a valid reference")
+		} else if !reflect.DeepEqual(parameters, provider.params) {
+			t.Errorf("stored (%v) parameters", provider.params)
 		}
 	})
 }
 
 func Test_Provider_Register(t *testing.T) {
-	t.Run("should retrieve the decoder factory", func(t *testing.T) {
-		action := "calling the decoder factory builded by the registed provider"
+	parameters := NewDefaultParameters()
+	checkMatcher := &containerFactoryMatcher{}
+	matcher := &containerFactoryMatcher{}
 
-		decoderFactoryMatcher := &containerFactoryMatcher{}
-		matcher := &containerFactoryMatcher{}
-
+	t.Run("register the decoder factory", func(t *testing.T) {
 		ctrl := gomock.NewController(t)
 		defer ctrl.Finish()
 
 		container := NewMockContainer(ctrl)
 		gomock.InOrder(
-			container.EXPECT().Add(ContainerDecoderFactoryID, decoderFactoryMatcher),
+			container.EXPECT().Add(ContainerDecoderFactoryID, checkMatcher),
 			container.EXPECT().Add(ContainerSourceFactoryID, matcher),
-			container.EXPECT().Add(ContainerID, matcher),
+			container.EXPECT().Add(ContainerConfigID, matcher),
 			container.EXPECT().Add(ContainerLoaderID, matcher),
 		)
 
-		provider := NewProvider(nil).(*provider)
+		provider := NewProvider(parameters)
 		provider.Register(container)
 
-		entity := decoderFactoryMatcher.factory(container)
+		entity := checkMatcher.factory(container)
 		switch entity.(type) {
 		case DecoderFactory:
 		default:
-			t.Errorf("%s didn't return a valid reference to a new decoder factory", action)
+			t.Errorf("didn't return a decoder factory")
 		}
 	})
 
-	t.Run("should panic when trying to retrieve a source factory when the file system adapter is missing", func(t *testing.T) {
-		action := "calling the source factory builded by the registed provider when the file system adapter is missing"
-
-		sourceFactoryMatcher := &containerFactoryMatcher{}
-		matcher := &containerFactoryMatcher{}
-
+	t.Run("panic retrieving source factory with missing file system adapter", func(t *testing.T) {
 		ctrl := gomock.NewController(t)
 		defer ctrl.Finish()
 
 		container := NewMockContainer(ctrl)
 		gomock.InOrder(
 			container.EXPECT().Add(ContainerDecoderFactoryID, matcher),
-			container.EXPECT().Add(ContainerSourceFactoryID, sourceFactoryMatcher),
-			container.EXPECT().Add(ContainerID, matcher),
+			container.EXPECT().Add(ContainerSourceFactoryID, checkMatcher),
+			container.EXPECT().Add(ContainerConfigID, matcher),
 			container.EXPECT().Add(ContainerLoaderID, matcher),
 		)
-		gomock.InOrder(
-			container.EXPECT().Get(sys.ContainerFileSystemID).Return(nil),
-		)
+		container.EXPECT().Get(sys.ContainerFileSystemID).Return(nil)
 
-		provider := NewProvider(nil).(*provider)
+		provider := NewProvider(parameters)
 		provider.Register(container)
 
 		defer func() {
 			if r := recover(); r == nil {
-				t.Errorf("%s when requesting (%s) did not panic", action, ContainerSourceFactoryID)
+				t.Errorf("did not panic")
 			}
 		}()
 
-		sourceFactoryMatcher.factory(container)
+		checkMatcher.factory(container)
 	})
 
-	t.Run("should panic when trying to retrieve a source factory and file system adapter is non-compliant with the interface", func(t *testing.T) {
-		action := "calling the source factory builded by the registed provider when the file system adapter is non-compliant with the interface"
-
-		sourceFactoryMatcher := &containerFactoryMatcher{}
-		matcher := &containerFactoryMatcher{}
-
+	t.Run("panic retrieving source factory with invalid file system adapter", func(t *testing.T) {
 		ctrl := gomock.NewController(t)
 		defer ctrl.Finish()
 
 		container := NewMockContainer(ctrl)
 		gomock.InOrder(
 			container.EXPECT().Add(ContainerDecoderFactoryID, matcher),
-			container.EXPECT().Add(ContainerSourceFactoryID, sourceFactoryMatcher),
-			container.EXPECT().Add(ContainerID, matcher),
+			container.EXPECT().Add(ContainerSourceFactoryID, checkMatcher),
+			container.EXPECT().Add(ContainerConfigID, matcher),
 			container.EXPECT().Add(ContainerLoaderID, matcher),
 		)
-		gomock.InOrder(
-			container.EXPECT().Get(sys.ContainerFileSystemID).Return("__something_else__"),
-		)
+		container.EXPECT().Get(sys.ContainerFileSystemID).Return("invalid_reference")
 
-		provider := NewProvider(nil).(*provider)
+		provider := NewProvider(parameters)
 		provider.Register(container)
 
 		defer func() {
 			if r := recover(); r == nil {
-				t.Errorf("%s when requesting (%s) did not panic", action, ContainerSourceFactoryID)
+				t.Errorf("did not panic")
 			}
 		}()
 
-		sourceFactoryMatcher.factory(container)
+		checkMatcher.factory(container)
 	})
 
-	t.Run("should panic when trying to retrieve a source factory when the decoder factory is missing", func(t *testing.T) {
-		action := "calling the source factory builded by the registed provider when the decoder factory is missing"
-
-		sourceFactoryMatcher := &containerFactoryMatcher{}
-		matcher := &containerFactoryMatcher{}
-
+	t.Run("panic retrieving source factory with missing decoder factory", func(t *testing.T) {
 		ctrl := gomock.NewController(t)
 		defer ctrl.Finish()
 
@@ -232,8 +124,8 @@ func Test_Provider_Register(t *testing.T) {
 		container := NewMockContainer(ctrl)
 		gomock.InOrder(
 			container.EXPECT().Add(ContainerDecoderFactoryID, matcher),
-			container.EXPECT().Add(ContainerSourceFactoryID, sourceFactoryMatcher),
-			container.EXPECT().Add(ContainerID, matcher),
+			container.EXPECT().Add(ContainerSourceFactoryID, checkMatcher),
+			container.EXPECT().Add(ContainerConfigID, matcher),
 			container.EXPECT().Add(ContainerLoaderID, matcher),
 		)
 		gomock.InOrder(
@@ -241,24 +133,19 @@ func Test_Provider_Register(t *testing.T) {
 			container.EXPECT().Get(ContainerDecoderFactoryID).Return(nil),
 		)
 
-		provider := NewProvider(nil).(*provider)
+		provider := NewProvider(parameters)
 		provider.Register(container)
 
 		defer func() {
 			if r := recover(); r == nil {
-				t.Errorf("%s when requesting (%s) did not panic", action, ContainerSourceFactoryID)
+				t.Errorf("did not panic")
 			}
 		}()
 
-		sourceFactoryMatcher.factory(container)
+		checkMatcher.factory(container)
 	})
 
-	t.Run("should panic when trying to retrieve a source factory when the decoder factory is non-compliant with the interface", func(t *testing.T) {
-		action := "calling the source factory builded by the registed provider when the decoder factory is non-compliant with the interface"
-
-		sourceFactoryMatcher := &containerFactoryMatcher{}
-		matcher := &containerFactoryMatcher{}
-
+	t.Run("panic retrieving source factory with invalid decoder factory", func(t *testing.T) {
 		ctrl := gomock.NewController(t)
 		defer ctrl.Finish()
 
@@ -267,33 +154,28 @@ func Test_Provider_Register(t *testing.T) {
 		container := NewMockContainer(ctrl)
 		gomock.InOrder(
 			container.EXPECT().Add(ContainerDecoderFactoryID, matcher),
-			container.EXPECT().Add(ContainerSourceFactoryID, sourceFactoryMatcher),
-			container.EXPECT().Add(ContainerID, matcher),
+			container.EXPECT().Add(ContainerSourceFactoryID, checkMatcher),
+			container.EXPECT().Add(ContainerConfigID, matcher),
 			container.EXPECT().Add(ContainerLoaderID, matcher),
 		)
 		gomock.InOrder(
 			container.EXPECT().Get(sys.ContainerFileSystemID).Return(fileSystem),
-			container.EXPECT().Get(ContainerDecoderFactoryID).Return("__something_else__"),
+			container.EXPECT().Get(ContainerDecoderFactoryID).Return("invalid_reference"),
 		)
 
-		provider := NewProvider(nil).(*provider)
+		provider := NewProvider(parameters)
 		provider.Register(container)
 
 		defer func() {
 			if r := recover(); r == nil {
-				t.Errorf("%s when requesting (%s) did not panic", action, ContainerSourceFactoryID)
+				t.Errorf("did not panic")
 			}
 		}()
 
-		sourceFactoryMatcher.factory(container)
+		checkMatcher.factory(container)
 	})
 
-	t.Run("should retrieve the source factory", func(t *testing.T) {
-		action := "calling the source factory builded by the registed provider"
-
-		sourceFactoryMatcher := &containerFactoryMatcher{}
-		matcher := &containerFactoryMatcher{}
-
+	t.Run("register the source factory", func(t *testing.T) {
 		ctrl := gomock.NewController(t)
 		defer ctrl.Finish()
 
@@ -303,8 +185,8 @@ func Test_Provider_Register(t *testing.T) {
 		container := NewMockContainer(ctrl)
 		gomock.InOrder(
 			container.EXPECT().Add(ContainerDecoderFactoryID, matcher),
-			container.EXPECT().Add(ContainerSourceFactoryID, sourceFactoryMatcher),
-			container.EXPECT().Add(ContainerID, matcher),
+			container.EXPECT().Add(ContainerSourceFactoryID, checkMatcher),
+			container.EXPECT().Add(ContainerConfigID, matcher),
 			container.EXPECT().Add(ContainerLoaderID, matcher),
 		)
 		gomock.InOrder(
@@ -312,23 +194,18 @@ func Test_Provider_Register(t *testing.T) {
 			container.EXPECT().Get(ContainerDecoderFactoryID).Return(decoderFactory),
 		)
 
-		provider := NewProvider(nil).(*provider)
+		provider := NewProvider(parameters)
 		provider.Register(container)
 
-		entity := sourceFactoryMatcher.factory(container)
+		entity := checkMatcher.factory(container)
 		switch entity.(type) {
-		case SourceFactory:
+		case *sourceFactory:
 		default:
-			t.Errorf("%s didn't return a valid reference to a new source factory", action)
+			t.Errorf("didn't return a source factory")
 		}
 	})
 
-	t.Run("should retrieve the config", func(t *testing.T) {
-		action := "calling the config builded by the registed provider"
-
-		configMatcher := &containerFactoryMatcher{}
-		matcher := &containerFactoryMatcher{}
-
+	t.Run("register the config", func(t *testing.T) {
 		ctrl := gomock.NewController(t)
 		defer ctrl.Finish()
 
@@ -336,27 +213,22 @@ func Test_Provider_Register(t *testing.T) {
 		gomock.InOrder(
 			container.EXPECT().Add(ContainerDecoderFactoryID, matcher),
 			container.EXPECT().Add(ContainerSourceFactoryID, matcher),
-			container.EXPECT().Add(ContainerID, configMatcher),
+			container.EXPECT().Add(ContainerConfigID, checkMatcher),
 			container.EXPECT().Add(ContainerLoaderID, matcher),
 		)
 
-		provider := NewProvider(nil).(*provider)
+		provider := NewProvider(parameters)
 		provider.Register(container)
 
-		entity := configMatcher.factory(container)
+		entity := checkMatcher.factory(container)
 		switch entity.(type) {
-		case Config:
+		case *config:
 		default:
-			t.Errorf("%s didn't return a valid reference to a new config", action)
+			t.Errorf("didn't return a config")
 		}
 	})
 
-	t.Run("should panic when trying to retrieve a loader when the config is missing", func(t *testing.T) {
-		action := "calling the loader builded by the registed provider when the config is missing"
-
-		loaderMatcher := &containerFactoryMatcher{}
-		matcher := &containerFactoryMatcher{}
-
+	t.Run("panic retrieving loader with missing config", func(t *testing.T) {
 		ctrl := gomock.NewController(t)
 		defer ctrl.Finish()
 
@@ -364,31 +236,26 @@ func Test_Provider_Register(t *testing.T) {
 		gomock.InOrder(
 			container.EXPECT().Add(ContainerDecoderFactoryID, matcher),
 			container.EXPECT().Add(ContainerSourceFactoryID, matcher),
-			container.EXPECT().Add(ContainerID, matcher),
-			container.EXPECT().Add(ContainerLoaderID, loaderMatcher),
+			container.EXPECT().Add(ContainerConfigID, matcher),
+			container.EXPECT().Add(ContainerLoaderID, checkMatcher),
 		)
 		gomock.InOrder(
-			container.EXPECT().Get(ContainerID).Return(nil),
+			container.EXPECT().Get(ContainerConfigID).Return(nil),
 		)
 
-		provider := NewProvider(nil).(*provider)
+		provider := NewProvider(parameters)
 		provider.Register(container)
 
 		defer func() {
 			if r := recover(); r == nil {
-				t.Errorf("%s when requesting (%s) did not panic", action, ContainerID)
+				t.Errorf("did not panic")
 			}
 		}()
 
-		loaderMatcher.factory(container)
+		checkMatcher.factory(container)
 	})
 
-	t.Run("should panic when trying to retrieve a loader when the config is non-compliant with the interface", func(t *testing.T) {
-		action := "calling the loader builded by the registed provider when the config is non-compliant with the interface"
-
-		loaderMatcher := &containerFactoryMatcher{}
-		matcher := &containerFactoryMatcher{}
-
+	t.Run("panic retrieving loader with invalid config", func(t *testing.T) {
 		ctrl := gomock.NewController(t)
 		defer ctrl.Finish()
 
@@ -396,31 +263,26 @@ func Test_Provider_Register(t *testing.T) {
 		gomock.InOrder(
 			container.EXPECT().Add(ContainerDecoderFactoryID, matcher),
 			container.EXPECT().Add(ContainerSourceFactoryID, matcher),
-			container.EXPECT().Add(ContainerID, matcher),
-			container.EXPECT().Add(ContainerLoaderID, loaderMatcher),
+			container.EXPECT().Add(ContainerConfigID, matcher),
+			container.EXPECT().Add(ContainerLoaderID, checkMatcher),
 		)
 		gomock.InOrder(
-			container.EXPECT().Get(ContainerID).Return("__something_else__"),
+			container.EXPECT().Get(ContainerConfigID).Return("invalid_reference"),
 		)
 
-		provider := NewProvider(nil).(*provider)
+		provider := NewProvider(parameters)
 		provider.Register(container)
 
 		defer func() {
 			if r := recover(); r == nil {
-				t.Errorf("%s when requesting (%s) did not panic", action, ContainerID)
+				t.Errorf("did not panic")
 			}
 		}()
 
-		loaderMatcher.factory(container)
+		checkMatcher.factory(container)
 	})
 
-	t.Run("should panic when trying to retrieve a loader when the source factory is missing", func(t *testing.T) {
-		action := "calling the loader builded by the registed provider when the source factory is missing"
-
-		loaderMatcher := &containerFactoryMatcher{}
-		matcher := &containerFactoryMatcher{}
-
+	t.Run("panic retrieving loader with missing source factory", func(t *testing.T) {
 		ctrl := gomock.NewController(t)
 		defer ctrl.Finish()
 
@@ -430,32 +292,27 @@ func Test_Provider_Register(t *testing.T) {
 		gomock.InOrder(
 			container.EXPECT().Add(ContainerDecoderFactoryID, matcher),
 			container.EXPECT().Add(ContainerSourceFactoryID, matcher),
-			container.EXPECT().Add(ContainerID, matcher),
-			container.EXPECT().Add(ContainerLoaderID, loaderMatcher),
+			container.EXPECT().Add(ContainerConfigID, matcher),
+			container.EXPECT().Add(ContainerLoaderID, checkMatcher),
 		)
 		gomock.InOrder(
-			container.EXPECT().Get(ContainerID).Return(config),
+			container.EXPECT().Get(ContainerConfigID).Return(config),
 			container.EXPECT().Get(ContainerSourceFactoryID).Return(nil),
 		)
 
-		provider := NewProvider(nil).(*provider)
+		provider := NewProvider(parameters)
 		provider.Register(container)
 
 		defer func() {
 			if r := recover(); r == nil {
-				t.Errorf("%s when requesting (%s) did not panic", action, ContainerID)
+				t.Errorf("did not panic")
 			}
 		}()
 
-		loaderMatcher.factory(container)
+		checkMatcher.factory(container)
 	})
 
-	t.Run("should panic when trying to retrieve a loader when the source factory is non-compliant with the interface", func(t *testing.T) {
-		action := "calling the loader builded by the registed provider when the source factory is non-compliant with the interface"
-
-		loaderMatcher := &containerFactoryMatcher{}
-		matcher := &containerFactoryMatcher{}
-
+	t.Run("panic retrieving loader with invalid source factory", func(t *testing.T) {
 		ctrl := gomock.NewController(t)
 		defer ctrl.Finish()
 
@@ -465,32 +322,27 @@ func Test_Provider_Register(t *testing.T) {
 		gomock.InOrder(
 			container.EXPECT().Add(ContainerDecoderFactoryID, matcher),
 			container.EXPECT().Add(ContainerSourceFactoryID, matcher),
-			container.EXPECT().Add(ContainerID, matcher),
-			container.EXPECT().Add(ContainerLoaderID, loaderMatcher),
+			container.EXPECT().Add(ContainerConfigID, matcher),
+			container.EXPECT().Add(ContainerLoaderID, checkMatcher),
 		)
 		gomock.InOrder(
-			container.EXPECT().Get(ContainerID).Return(config),
-			container.EXPECT().Get(ContainerSourceFactoryID).Return("__something_else__"),
+			container.EXPECT().Get(ContainerConfigID).Return(config),
+			container.EXPECT().Get(ContainerSourceFactoryID).Return("invalid_reference"),
 		)
 
-		provider := NewProvider(nil).(*provider)
+		provider := NewProvider(parameters)
 		provider.Register(container)
 
 		defer func() {
 			if r := recover(); r == nil {
-				t.Errorf("%s when requesting (%s) did not panic", action, ContainerID)
+				t.Errorf("did not panic")
 			}
 		}()
 
-		loaderMatcher.factory(container)
+		checkMatcher.factory(container)
 	})
 
-	t.Run("should retrieve the loader", func(t *testing.T) {
-		action := "calling the loader builded by the registed provider"
-
-		loaderMatcher := &containerFactoryMatcher{}
-		matcher := &containerFactoryMatcher{}
-
+	t.Run("retrieving loader", func(t *testing.T) {
 		ctrl := gomock.NewController(t)
 		defer ctrl.Finish()
 
@@ -501,30 +353,30 @@ func Test_Provider_Register(t *testing.T) {
 		gomock.InOrder(
 			container.EXPECT().Add(ContainerDecoderFactoryID, matcher),
 			container.EXPECT().Add(ContainerSourceFactoryID, matcher),
-			container.EXPECT().Add(ContainerID, matcher),
-			container.EXPECT().Add(ContainerLoaderID, loaderMatcher),
+			container.EXPECT().Add(ContainerConfigID, matcher),
+			container.EXPECT().Add(ContainerLoaderID, checkMatcher),
 		)
 		gomock.InOrder(
-			container.EXPECT().Get(ContainerID).Return(config),
+			container.EXPECT().Get(ContainerConfigID).Return(config),
 			container.EXPECT().Get(ContainerSourceFactoryID).Return(sourceFactory),
 		)
 
-		provider := NewProvider(nil).(*provider)
+		provider := NewProvider(parameters)
 		provider.Register(container)
 
-		entity := loaderMatcher.factory(container)
+		entity := checkMatcher.factory(container)
 		switch entity.(type) {
-		case Loader:
+		case *loader:
 		default:
-			t.Errorf("%s didn't return a valid reference to a new loader", action)
+			t.Errorf("didn't return a loader")
 		}
 	})
 }
 
 func Test_Provider_Boot(t *testing.T) {
-	t.Run("should panic if the loader is not registered", func(t *testing.T) {
-		action := "calling the loader builded by the registed provider"
+	parameters := NewDefaultParameters()
 
+	t.Run("panic if the loader is missing", func(t *testing.T) {
 		ctrl := gomock.NewController(t)
 		defer ctrl.Finish()
 
@@ -533,34 +385,32 @@ func Test_Provider_Boot(t *testing.T) {
 
 		defer func() {
 			if r := recover(); r == nil {
-				t.Errorf("%s when requesting (%s) did not panic", action, ContainerLoaderID)
+				t.Errorf("did not panic")
 			}
 		}()
 
-		provider := NewProvider(nil).(*provider)
+		provider := NewProvider(parameters)
 		provider.Boot(container)
 	})
 
-	t.Run("should panic if the loader is non-compliant with the interface", func(t *testing.T) {
-		action := "calling a non-compliant loader builded by the registed provider"
-
+	t.Run("panic if the loader is invalid", func(t *testing.T) {
 		ctrl := gomock.NewController(t)
 		defer ctrl.Finish()
 
 		container := NewMockContainer(ctrl)
-		container.EXPECT().Get(ContainerLoaderID).Return("__something_else__")
+		container.EXPECT().Get(ContainerLoaderID).Return("invalid_reference")
 
 		defer func() {
 			if r := recover(); r == nil {
-				t.Errorf("%s when requesting (%s) did not panic", action, ContainerLoaderID)
+				t.Errorf("did not panic")
 			}
 		}()
 
-		provider := NewProvider(nil).(*provider)
+		provider := NewProvider(parameters)
 		provider.Boot(container)
 	})
 
-	t.Run("should load the configuration", func(t *testing.T) {
+	t.Run("load the configuration", func(t *testing.T) {
 		ctrl := gomock.NewController(t)
 		defer ctrl.Finish()
 
@@ -570,7 +420,7 @@ func Test_Provider_Boot(t *testing.T) {
 		container := NewMockContainer(ctrl)
 		container.EXPECT().Get(ContainerLoaderID).Return(loader)
 
-		provider := NewProvider(nil).(*provider)
+		provider := NewProvider(parameters)
 		provider.Boot(container)
 	})
 }

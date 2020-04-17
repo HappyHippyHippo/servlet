@@ -6,20 +6,14 @@ import (
 
 func Test_NewJSONFormatterFactoryStrategy(t *testing.T) {
 	t.Run("creates a new json formatter factory strategy", func(t *testing.T) {
-		action := "Creating a json formatter factory strategy"
-
-		strategy := NewJSONFormatterFactoryStrategy()
-
-		if strategy == nil {
-			t.Errorf("%s didn't return a valid reference to a new json formatter factory strategy", action)
+		if NewJSONFormatterFactoryStrategy() == nil {
+			t.Errorf("didn't return a valid reference")
 		}
 	})
 }
 
 func Test_JSONFormatterFactoryStrategy_Accept(t *testing.T) {
-	t.Run("should accept only json format", func(t *testing.T) {
-		action := "Checking the accepting format"
-
+	t.Run("accept only json format", func(t *testing.T) {
 		scenarios := []struct {
 			format   string
 			expected bool
@@ -34,34 +28,29 @@ func Test_JSONFormatterFactoryStrategy_Accept(t *testing.T) {
 			},
 		}
 
-		for _, scn := range scenarios {
-			strategy := NewJSONFormatterFactoryStrategy()
+		strategy := NewJSONFormatterFactoryStrategy()
 
+		for _, scn := range scenarios {
 			if check := strategy.Accept(scn.format); check != scn.expected {
-				t.Errorf("%s didn't returned the expected (%v) for the format (%s), returned (%v)", action, scn.expected, scn.format, check)
+				t.Errorf("returned (%v) for the (%s) format", check, scn.format)
 			}
 		}
 	})
 }
 
 func Test_JSONFormatterFactoryStrategy_Create(t *testing.T) {
-	t.Run("should create the requested json formatter", func(t *testing.T) {
-		action := "Creating a new json formatter"
+	strategy := NewJSONFormatterFactoryStrategy()
 
-		strategy := NewJSONFormatterFactoryStrategy()
-
-		formatter, err := strategy.Create()
-		if err != nil {
-			t.Errorf("%s return the unexpected error : %v", action, err)
-		}
-
-		if formatter == nil {
-			t.Errorf("%s didn't returned a valid log formatter reference", action)
+	t.Run("create the requested json formatter", func(t *testing.T) {
+		if formatter, err := strategy.Create(); err != nil {
+			t.Errorf("returned the (%v) error", err)
+		} else if formatter == nil {
+			t.Errorf("didn't returned a valid reference")
 		} else {
 			switch formatter.(type) {
 			case *jsonFormatter:
 			default:
-				t.Errorf("%s didn't return a valid reference to a new json formatter reference", action)
+				t.Errorf("didn't return a new json formatter")
 			}
 		}
 	})

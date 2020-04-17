@@ -15,12 +15,15 @@ var levelNameMap = map[Level]string{
 
 type jsonFormatter struct{}
 
-// NewJSONFormatter method
+// NewJSONFormatter will instantiate a new JSON formatter that will take the
+// logging entry request and create the output JSON string.
 func NewJSONFormatter() Formatter {
 	return &jsonFormatter{}
 }
 
-func (f jsonFormatter) Format(level Level, fields F, message string) string {
+// Format will create the output JSON string message formatted with the content
+// of the passed level, fields and message
+func (f jsonFormatter) Format(level Level, message string, fields F) string {
 	if fields == nil {
 		fields = F{}
 	}

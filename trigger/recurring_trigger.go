@@ -9,8 +9,8 @@ type recurringTrigger struct {
 	trigger
 }
 
-// NewRecurringTrigger intantiate a new pulse trigger that will execute a
-// callback method recurrently with a defined period of time.
+// NewRecurringTrigger intantiate a new trigger that will execute a
+// callback method recurrently with a defined periodicity.
 func NewRecurringTrigger(period time.Duration, callback Callback) (Trigger, error) {
 	if callback == nil {
 		return nil, fmt.Errorf("Invalid nil 'callback' argument")
@@ -45,9 +45,7 @@ func NewRecurringTrigger(period time.Duration, callback Callback) (Trigger, erro
 	return t, nil
 }
 
-// Close method will stop the trigger.
-// This method exists so it will compliant with the servlet Closable
-// interface.
+// Close method will stop the trigger from execution.
 func (t *recurringTrigger) Close() error {
 	return t.Stop()
 }

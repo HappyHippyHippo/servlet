@@ -13,8 +13,9 @@ type observableFileSource struct {
 	timestamp time.Time
 }
 
-// NewObservableFileSource instantiate a new file source that will
-// be checked for changes.
+// NewObservableFileSource instantiate a new source that treats a file as
+// the origin of the configuration content. This file source will be periodicaly
+// checked for changes and loaded if so.
 func NewObservableFileSource(path string, format string, fileSystem afero.Fs, decoderFactory DecoderFactory) (ObservableSource, error) {
 	if fileSystem == nil {
 		return nil, fmt.Errorf("Invalid nil 'fileSystem' argument")
@@ -44,8 +45,8 @@ func NewObservableFileSource(path string, format string, fileSystem afero.Fs, de
 	return s, nil
 }
 
-// Reload will check if the source has been updated and updates the
-// source partial content if so.
+// Reload will check if the source has been updated, and, if so, reload the
+// source configuration partial content.
 func (s *observableFileSource) Reload() (bool, error) {
 	fileInfo, err := s.fileSystem.Stat(s.path)
 	if err != nil {

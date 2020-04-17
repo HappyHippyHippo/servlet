@@ -17,7 +17,7 @@ const (
 )
 
 // LevelMap defines a relation between a human-readable string
-// and a logging level.
+// and a code level identifier of a logging level.
 var LevelMap = map[string]Level{
 	"fatal":   FATAL,
 	"error":   ERROR,

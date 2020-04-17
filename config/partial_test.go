@@ -6,9 +6,7 @@ import (
 )
 
 func Test_Partial_Has(t *testing.T) {
-	t.Run("should correctly check if a valid path exists", func(t *testing.T) {
-		action := "Checking the existence of a valid path in the partial"
-
+	t.Run("check if a valid path exists", func(t *testing.T) {
 		scenarios := []struct {
 			partial partial
 			search  string
@@ -53,14 +51,12 @@ func Test_Partial_Has(t *testing.T) {
 
 		for _, scn := range scenarios {
 			if result := scn.partial.Has(scn.search); !result {
-				t.Errorf("%s didn't found the (%s) path in (%v)", action, scn.search, scn.partial)
+				t.Errorf("didn't found the (%s) path in (%v)", scn.search, scn.partial)
 			}
 		}
 	})
 
-	t.Run("should correctly check if a invalid path do not exists", func(t *testing.T) {
-		action := "Checking the existence of a valid path in the partial"
-
+	t.Run("check if a invalid path do not exists", func(t *testing.T) {
 		scenarios := []struct {
 			partial partial
 			search  string
@@ -89,16 +85,14 @@ func Test_Partial_Has(t *testing.T) {
 
 		for _, scn := range scenarios {
 			if result := scn.partial.Has(scn.search); result {
-				t.Errorf("%s unexpectedly found the (%s) path in (%v)", action, scn.search, scn.partial)
+				t.Errorf("found the (%s) path in (%v)", scn.search, scn.partial)
 			}
 		}
 	})
 }
 
 func Test_Partial_Get(t *testing.T) {
-	t.Run("should correctly retrieve a value of a existent path", func(t *testing.T) {
-		action := "Retrieving a valid path from the partial"
-
+	t.Run("retrieve a value of a existent path", func(t *testing.T) {
 		scenarios := []struct {
 			partial  partial
 			search   string
@@ -154,14 +148,12 @@ func Test_Partial_Get(t *testing.T) {
 		for _, scn := range scenarios {
 			result := scn.partial.Get(scn.search)
 			if !reflect.DeepEqual(result, scn.expected) {
-				t.Errorf("%s resulted (%v) when retrieving (%v), expected (%v)", action, result, scn.search, scn.expected)
+				t.Errorf("returned (%v) when retrieving (%v), expected (%v)", result, scn.search, scn.expected)
 			}
 		}
 	})
 
-	t.Run("should correctly return nil if a path don't exists", func(t *testing.T) {
-		action := "Retrieving a non-existing path from the partial"
-
+	t.Run("return nil if a path don't exists", func(t *testing.T) {
 		scenarios := []struct {
 			partial partial
 			search  string
@@ -193,79 +185,62 @@ func Test_Partial_Get(t *testing.T) {
 		}
 
 		for _, scn := range scenarios {
-			result := scn.partial.Get(scn.search)
-			if result != nil {
-				t.Errorf("%s returned (%v) when retrieving (%v), expecting nil", action, result, scn.search)
+			if result := scn.partial.Get(scn.search); result != nil {
+				t.Errorf("returned (%v) when retrieving (%v)", result, scn.search)
 			}
 		}
 	})
 
-	t.Run("should return nil if the node actually stores nil", func(t *testing.T) {
-		action := "Retrieving a stored nil value"
+	t.Run("return nil if the node actually stores nil", func(t *testing.T) {
+		p := partial{"node1": nil, "node2": "value2"}
 
-		p := partial{"node1": nil}
-		path := "node1"
-		var expectedValue interface{} = nil
-
-		value := p.Get(path, "__default_value__")
-		if value != expectedValue {
-			t.Errorf("%s returned the (%v) value, expected (%v)", action, value, expectedValue)
+		if value := p.Get("node1", "default_value"); value != nil {
+			t.Errorf("returned the (%v) value", value)
 		}
 	})
 
-	t.Run("should correctly return the default value if a path don't exists", func(t *testing.T) {
-		action := "Retrieving a non-existing path from the partial with a default value"
-
+	t.Run("return the default value if a path don't exists", func(t *testing.T) {
 		scenarios := []struct {
-			partial       partial
-			search        string
-			expectedValue string
+			partial partial
+			search  string
 		}{
 			{ // test empty partial search for non-existent node
-				partial:       partial{},
-				search:        "node",
-				expectedValue: "__default__",
+				partial: partial{},
+				search:  "node",
 			},
 			{ // test single node search for non-existent node
-				partial:       partial{"node": "value"},
-				search:        "node2",
-				expectedValue: "__default__",
+				partial: partial{"node": "value"},
+				search:  "node2",
 			},
 			{ // test multiple node search for non-existent node
-				partial:       partial{"node1": "value1", "node2": "value2"},
-				search:        "node3",
-				expectedValue: "__default__",
+				partial: partial{"node1": "value1", "node2": "value2"},
+				search:  "node3",
 			},
 			{ // test tree search for non-existent root node
-				partial:       partial{"node1": partial{"node2": "value"}},
-				search:        "node2",
-				expectedValue: "__default__",
+				partial: partial{"node1": partial{"node2": "value"}},
+				search:  "node2",
 			},
 			{ // test tree search for non-existent subnode
-				partial:       partial{"node1": partial{"node2": "value"}},
-				search:        "node1.node1",
-				expectedValue: "__default__",
+				partial: partial{"node1": partial{"node2": "value"}},
+				search:  "node1.node1",
 			},
 			{ // test tree search for non-existent sub-sub-node
-				partial:       partial{"node1": partial{"node2": "value"}},
-				search:        "node1.node2.node3",
-				expectedValue: "__default__",
+				partial: partial{"node1": partial{"node2": "value"}},
+				search:  "node1.node2.node3",
 			},
 		}
 
+		defValue := "default_value"
 		for _, scn := range scenarios {
-			result := scn.partial.Get(scn.search, scn.expectedValue)
-			if result != scn.expectedValue {
-				t.Errorf("%s returned (%v) when retrieving (%v), expecting %s", action, result, scn.search, scn.expectedValue)
+			if result := scn.partial.Get(scn.search, defValue); result != defValue {
+				t.Errorf("returned (%v) when retrieving (%v)", result, scn.search)
 			}
 		}
 	})
 }
 
 func Test_Partial_Int(t *testing.T) {
-	t.Run("should correctly validate a invalid request", func(t *testing.T) {
-		action := "Retrieving the path value as a int with an error"
-
+	t.Run("panic on a invalid path or a non-integer value", func(t *testing.T) {
 		scenarios := []struct {
 			partial partial
 			path    string
@@ -274,7 +249,7 @@ func Test_Partial_Int(t *testing.T) {
 				partial: partial{},
 				path:    "node1",
 			},
-			{ // test when the path is storing anil value
+			{ // test when the path is storing a nil value
 				partial: partial{"node1": nil},
 				path:    "node1",
 			},
@@ -282,7 +257,7 @@ func Test_Partial_Int(t *testing.T) {
 				partial: partial{"node1": "value1"},
 				path:    "node1",
 			},
-			{ // test when the path is storing an object value
+			{ // test when the path is storing a object value
 				partial: partial{"node1": partial{"node2": "value1"}},
 				path:    "node1",
 			},
@@ -292,7 +267,7 @@ func Test_Partial_Int(t *testing.T) {
 			test := func() {
 				defer func() {
 					if r := recover(); r == nil {
-						t.Errorf("%s didn't panic", action)
+						t.Errorf("didn't panic")
 					}
 				}()
 				scn.partial.Int(scn.path)
@@ -301,37 +276,26 @@ func Test_Partial_Int(t *testing.T) {
 		}
 	})
 
-	t.Run("should correctly retrieve a integer value", func(t *testing.T) {
-		action := "Retrieving the path value as a int"
+	value := 101
+	p := partial{"node1": partial{"node2": value}}
 
-		p := partial{"node1": partial{"node2": 101}}
-		path := "node1.node2"
-		expectedValue := 101
-
-		value := p.Int(path)
-		if value != expectedValue {
-			t.Errorf("%s returned the (%v) value, expected (%v)", action, value, expectedValue)
+	t.Run("retrieve a integer value", func(t *testing.T) {
+		if result := p.Int("node1.node2"); result != value {
+			t.Errorf("returned the (%v) value", result)
 		}
 	})
 
-	t.Run("should return the given default value if path is not found", func(t *testing.T) {
-		action := "Retrieving a non-existing path"
+	t.Run("return the given default value if invalid path", func(t *testing.T) {
+		defValue := 3
 
-		p := partial{"node1": partial{"node2": 101}}
-		path := "node3"
-		expectedValue := 3
-
-		value := p.Int(path, expectedValue)
-		if value != expectedValue {
-			t.Errorf("%s returned the (%v) value, expected (%v)", action, value, expectedValue)
+		if result := p.Int("node3", defValue); result != defValue {
+			t.Errorf("returned the (%v) value", result)
 		}
 	})
 }
 
 func Test_Partial_String(t *testing.T) {
-	t.Run("should correctly validate a invalid request", func(t *testing.T) {
-		action := "Retrieving the path value as a string with an error"
-
+	t.Run("panic on a invalid path or a non-string value", func(t *testing.T) {
 		scenarios := []struct {
 			partial partial
 			path    string
@@ -358,7 +322,7 @@ func Test_Partial_String(t *testing.T) {
 			test := func() {
 				defer func() {
 					if r := recover(); r == nil {
-						t.Errorf("%s didn't panic", action)
+						t.Errorf("didn't panic")
 					}
 				}()
 				scn.partial.String(scn.path)
@@ -367,37 +331,26 @@ func Test_Partial_String(t *testing.T) {
 		}
 	})
 
-	t.Run("should correctly retrieve a string value", func(t *testing.T) {
-		action := "Retrieving the path value as a string"
+	value := "value1"
+	p := partial{"node1": partial{"node2": value}}
 
-		p := partial{"node1": partial{"node2": "value1"}}
-		path := "node1.node2"
-		expectedValue := "value1"
-
-		value := p.String(path)
-		if value != expectedValue {
-			t.Errorf("%s returned the (%v) value, expected (%v)", action, value, expectedValue)
+	t.Run("retrieve a string value", func(t *testing.T) {
+		if result := p.String("node1.node2"); result != value {
+			t.Errorf("returned the (%v) value", result)
 		}
 	})
 
-	t.Run("should return the given default value if path is not found", func(t *testing.T) {
-		action := "Retrieving a non-existing path"
+	t.Run("return the given default value if invalid path", func(t *testing.T) {
+		defValue := "value"
 
-		p := partial{"node1": partial{"node2": 101}}
-		path := "node3"
-		expectedValue := "value"
-
-		value := p.String(path, expectedValue)
-		if value != expectedValue {
-			t.Errorf("%s returned the (%v) value, expected (%v)", action, value, expectedValue)
+		if result := p.String("node3", defValue); result != defValue {
+			t.Errorf("returned the (%v) value", result)
 		}
 	})
 }
 
 func Test_Partial_Config(t *testing.T) {
-	t.Run("should correctly validate a invalid request", func(t *testing.T) {
-		action := "Retrieving the path value as a config with an error"
-
+	t.Run("panic on a invalid path or a non-partial value", func(t *testing.T) {
 		scenarios := []struct {
 			partial partial
 			path    string
@@ -424,7 +377,7 @@ func Test_Partial_Config(t *testing.T) {
 			test := func() {
 				defer func() {
 					if r := recover(); r == nil {
-						t.Errorf("%s didn't panic", action)
+						t.Errorf("didn't panic")
 					}
 				}()
 				scn.partial.Config(scn.path)
@@ -433,37 +386,28 @@ func Test_Partial_Config(t *testing.T) {
 		}
 	})
 
-	t.Run("should correctly retrieve a config object", func(t *testing.T) {
-		action := "Retrieving the path value as a config object"
+	value := partial{"node2": "value1"}
+	p := partial{"node1": value}
 
-		p := partial{"node1": partial{"node2": "value1"}}
-		path := "node1"
-		expectedValue := partial{"node2": "value1"}
-
-		value := p.Config(path)
-		if !reflect.DeepEqual(value, expectedValue) {
-			t.Errorf("%s returned the (%v) value, expected (%v)", action, value, expectedValue)
+	t.Run("retrieve a config partial", func(t *testing.T) {
+		result := p.Config("node1")
+		if !reflect.DeepEqual(result, value) {
+			t.Errorf("returned the (%v) value", result)
 		}
 	})
 
-	t.Run("should return the given default value if path is not found", func(t *testing.T) {
-		action := "Retrieving a non-existing path"
+	t.Run("return the given default value if invalid path", func(t *testing.T) {
+		defValue := partial{"node3": 345}
 
-		p := partial{"node1": partial{"node2": 101}}
-		path := "node3"
-		expectedValue := partial{"node3": 345}
-
-		value := p.Config(path, expectedValue)
-		if !reflect.DeepEqual(value, expectedValue) {
-			t.Errorf("%s returned the (%v) value, expected (%v)", action, value, expectedValue)
+		result := p.Config("node3", defValue)
+		if !reflect.DeepEqual(result, defValue) {
+			t.Errorf("returned the (%v) value", result)
 		}
 	})
 }
 
 func Test_Partial_Merge(t *testing.T) {
-	t.Run("should correctly merges two partial", func(t *testing.T) {
-		action := "Merging two partials"
-
+	t.Run("merges two partials", func(t *testing.T) {
 		scenarios := []struct {
 			partial1 partial
 			partial2 partial
@@ -524,7 +468,7 @@ func Test_Partial_Merge(t *testing.T) {
 		for _, scn := range scenarios {
 			result := scn.partial1.merge(scn.partial2)
 			if !reflect.DeepEqual(result, scn.expected) {
-				t.Errorf("%s resulted in (%s) when merging (%v) and (%v), expecting (%v)", action, result, scn.partial1, scn.partial2, scn.expected)
+				t.Errorf("resulted in (%s) when merging (%v) and (%v), expecting (%v)", result, scn.partial1, scn.partial2, scn.expected)
 			}
 		}
 	})

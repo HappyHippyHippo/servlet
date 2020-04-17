@@ -7,7 +7,7 @@ import (
 // Callback used as a trigger execution process.
 type Callback func() error
 
-// Trigger interface defines the interaction with a trigger.
+// Trigger interface defines the interaction with a base trigger instance.
 type Trigger interface {
 	Close() error
 	Timer() time.Duration
@@ -27,12 +27,12 @@ func (t *trigger) Timer() time.Duration {
 	return t.timer
 }
 
-// IsStopped signal if the trigger is stopped.
+// IsStopped check if the trigger is stopped.
 func (t *trigger) IsStopped() bool {
 	return t.isStopped
 }
 
-// Stop signal the trigger to stop execution.
+// Stop signals the trigger to stop execution.
 func (t *trigger) Stop() error {
 	if !t.isStopped {
 		t.isStopped = true

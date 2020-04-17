@@ -16,7 +16,8 @@ type yamlDecoder struct {
 	decoder underlyingYamlDecoder
 }
 
-// NewYamlDecoder instantiate a new yaml configuration decoder object.
+// NewYamlDecoder instantiate a new yaml configuration decoder object used to
+// parse a yaml configuration source into a config partial.
 func NewYamlDecoder(reader io.Reader) (Decoder, error) {
 	if reader == nil {
 		return nil, fmt.Errorf("Invalid nil 'reader' argument")

@@ -17,7 +17,8 @@ type fileSource struct {
 	decoderFactory DecoderFactory
 }
 
-// NewFileSource instantiate a new file configuration source.
+// NewFileSource instantiate a new source that treats a file as
+// the origin of the configuration content.
 func NewFileSource(path string, format string, fileSystem afero.Fs, decoderFactory DecoderFactory) (Source, error) {
 	if fileSystem == nil {
 		return nil, fmt.Errorf("Invalid nil 'fileSystem' argument")

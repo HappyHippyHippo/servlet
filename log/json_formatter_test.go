@@ -7,19 +7,14 @@ import (
 
 func Test_NewJSONFormatter(t *testing.T) {
 	t.Run("creates a new json formatter", func(t *testing.T) {
-		action := "Creating a new json formatter"
-
-		formatter := NewJSONFormatter()
-		if formatter == nil {
-			t.Errorf("%s didn't return a valid reference to a new json formatter", action)
+		if NewJSONFormatter() == nil {
+			t.Errorf("didn't return a valid reference")
 		}
 	})
 }
 
 func Test_JSONFormatter_Format(t *testing.T) {
-	t.Run("should correctly format the message", func(t *testing.T) {
-		action := "Formatting the requested message"
-
+	t.Run("correctly format the message", func(t *testing.T) {
 		scenarios := []struct {
 			level    Level
 			fields   F
@@ -76,12 +71,13 @@ func Test_JSONFormatter_Format(t *testing.T) {
 			},
 		}
 
+		formatter := NewJSONFormatter()
+
 		for _, scn := range scenarios {
-			formatter := NewJSONFormatter()
-			result := formatter.Format(scn.level, scn.fields, scn.message)
+			result := formatter.Format(scn.level, scn.message, scn.fields)
 			matched, _ := regexp.Match(scn.expected, []byte(result))
 			if !matched {
-				t.Errorf("%s didn't correctly validated agains the (%s) regexp : (%s)", action, scn.expected, result)
+				t.Errorf("didn't validate (%s) output", result)
 			}
 		}
 	})

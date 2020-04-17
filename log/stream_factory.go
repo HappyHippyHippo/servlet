@@ -7,7 +7,8 @@ import (
 )
 
 // StreamFactory interface defines the methods of the stream factory
-// that can be used to instantiate a stream.
+// that can be used to instantiate a logging stream given the desired stream
+// type.
 type StreamFactory interface {
 	Register(strategy StreamFactoryStrategy) error
 	Create(format string, args ...interface{}) (Stream, error)
@@ -26,7 +27,7 @@ func NewStreamFactory() StreamFactory {
 }
 
 // Register will register a new stream factory strategy to be used
-// on creation request.
+// on creation requests.
 func (f *streamFactory) Register(strategy StreamFactoryStrategy) error {
 	if strategy == nil {
 		return fmt.Errorf("Invalid nil 'strategy' argument")

@@ -5,9 +5,8 @@
 package log
 
 import (
-	reflect "reflect"
-
 	gomock "github.com/golang/mock/gomock"
+	reflect "reflect"
 )
 
 // MockFormatter is a mock of Formatter interface
@@ -34,15 +33,15 @@ func (m *MockFormatter) EXPECT() *MockFormatterMockRecorder {
 }
 
 // Format mocks base method
-func (m *MockFormatter) Format(level Level, fields F, message string) string {
+func (m *MockFormatter) Format(level Level, message string, fields F) string {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "Format", level, fields, message)
+	ret := m.ctrl.Call(m, "Format", level, message, fields)
 	ret0, _ := ret[0].(string)
 	return ret0
 }
 
 // Format indicates an expected call of Format
-func (mr *MockFormatterMockRecorder) Format(level, fields, message interface{}) *gomock.Call {
+func (mr *MockFormatterMockRecorder) Format(level, message, fields interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Format", reflect.TypeOf((*MockFormatter)(nil).Format), level, fields, message)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Format", reflect.TypeOf((*MockFormatter)(nil).Format), level, message, fields)
 }

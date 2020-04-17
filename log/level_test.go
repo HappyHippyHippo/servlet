@@ -3,9 +3,7 @@ package log
 import "testing"
 
 func Test_Level(t *testing.T) {
-	t.Run("defined levels should have correct priorities", func(t *testing.T) {
-		action := "Comparing log levels priority"
-
+	t.Run("levels have correct priorities", func(t *testing.T) {
 		scenarios := []struct {
 			lower      Level
 			lowerName  string
@@ -40,16 +38,14 @@ func Test_Level(t *testing.T) {
 
 		for _, scn := range scenarios {
 			if scn.lower > scn.higher {
-				t.Errorf("%s invalidated, lower %s (%v) greater then higher %s (%v)", action, scn.lowerName, scn.lower, scn.higherName, scn.higher)
+				t.Errorf("lower %s greater then %s", scn.lowerName, scn.higherName)
 			}
 		}
 	})
 }
 
 func Test_LevelMap(t *testing.T) {
-	t.Run("defined level map should have correct priorities", func(t *testing.T) {
-		action := "Checking the level map value "
-
+	t.Run("level map have correct priorities", func(t *testing.T) {
 		scenarios := []struct {
 			name      string
 			level     Level
@@ -84,7 +80,7 @@ func Test_LevelMap(t *testing.T) {
 
 		for _, scn := range scenarios {
 			if scn.level != LevelMap[scn.name] {
-				t.Errorf("%s invalidated, (%s) did not correspond to (%s) level", action, scn.name, scn.levelName)
+				t.Errorf("(%s) did not correspond to (%s) level", scn.name, scn.levelName)
 			}
 		}
 	})

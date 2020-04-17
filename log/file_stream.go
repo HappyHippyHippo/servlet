@@ -47,21 +47,21 @@ func (s *fileStream) Close() (err error) {
 
 // Signal will process the logging signal request and store the logging request
 // into the underlying file if passing the channel and level filtering.
-func (s fileStream) Signal(channel string, level Level, fields F, message string) error {
+func (s fileStream) Signal(channel string, level Level, message string, fields F) error {
 	i := sort.SearchStrings(s.channels, channel)
 	if i == len(s.channels) || s.channels[i] != channel {
 		return nil
 	}
-	return s.Broadcast(level, fields, message)
+	return s.Broadcast(level, message, fields)
 }
 
 // Broadcast will process the logging signal request and store the logging
 // request into the underlying file if passing the level filtering.
-func (s fileStream) Broadcast(level Level, fields F, message string) error {
+func (s fileStream) Broadcast(level Level, message string, fields F) error {
 	if s.level < level {
 		return nil
 	}
 
-	_, err := fmt.Fprintln(s.writer, s.format(level, fields, message))
+	_, err := fmt.Fprintln(s.writer, s.format(level, message, fields))
 	return err
 }

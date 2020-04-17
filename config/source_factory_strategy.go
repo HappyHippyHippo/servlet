@@ -1,7 +1,7 @@
 package config
 
 // SourceFactoryStrategy interface defines the methods of the source factory
-// strategy that can instantiate a particular source.
+// strategy that will be used instantiate a particular source type.
 type SourceFactoryStrategy interface {
 	Accept(stype string, args ...interface{}) bool
 	AcceptConfig(conf Partial) bool
