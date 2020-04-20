@@ -20,7 +20,7 @@ func NewYamlDecoderFactoryStrategy() DecoderFactoryStrategy {
 }
 
 // Accept will check if the decoder factory strategy can instantiate a
-// decoder of the requested format.
+// decoder giving the format and the creation request paramaters.
 func (yamlDecoderFactoryStrategy) Accept(format string, args ...interface{}) bool {
 	if format != DecoderFormatYAML || len(args) < 1 {
 		return false
@@ -35,7 +35,8 @@ func (yamlDecoderFactoryStrategy) Accept(format string, args ...interface{}) boo
 	return true
 }
 
-// Create will instantiate the desired decoder instance.
+// Create will instantiate the desired decoder instance with the given reader
+// instance as source of the content to decode.
 func (yamlDecoderFactoryStrategy) Create(args ...interface{}) (Decoder, error) {
 	reader := args[0].(io.Reader)
 

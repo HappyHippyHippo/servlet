@@ -5,9 +5,8 @@
 package log
 
 import (
-	reflect "reflect"
-
 	gomock "github.com/golang/mock/gomock"
+	reflect "reflect"
 )
 
 // MockStream is a mock of Stream interface
@@ -48,31 +47,31 @@ func (mr *MockStreamMockRecorder) Close() *gomock.Call {
 }
 
 // Signal mocks base method
-func (m *MockStream) Signal(channel string, level Level, fields F, message string) error {
+func (m *MockStream) Signal(channel string, level Level, message string, fields F) error {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "Signal", channel, level, fields, message)
+	ret := m.ctrl.Call(m, "Signal", channel, level, message, fields)
 	ret0, _ := ret[0].(error)
 	return ret0
 }
 
 // Signal indicates an expected call of Signal
-func (mr *MockStreamMockRecorder) Signal(channel, level, fields, message interface{}) *gomock.Call {
+func (mr *MockStreamMockRecorder) Signal(channel, level, message, fields interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Signal", reflect.TypeOf((*MockStream)(nil).Signal), channel, level, fields, message)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Signal", reflect.TypeOf((*MockStream)(nil).Signal), channel, level, message, fields)
 }
 
 // Broadcast mocks base method
-func (m *MockStream) Broadcast(level Level, fields F, message string) error {
+func (m *MockStream) Broadcast(level Level, message string, fields F) error {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "Broadcast", level, fields, message)
+	ret := m.ctrl.Call(m, "Broadcast", level, message, fields)
 	ret0, _ := ret[0].(error)
 	return ret0
 }
 
 // Broadcast indicates an expected call of Broadcast
-func (mr *MockStreamMockRecorder) Broadcast(level, fields, message interface{}) *gomock.Call {
+func (mr *MockStreamMockRecorder) Broadcast(level, message, fields interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Broadcast", reflect.TypeOf((*MockStream)(nil).Broadcast), level, fields, message)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Broadcast", reflect.TypeOf((*MockStream)(nil).Broadcast), level, message, fields)
 }
 
 // HasChannel mocks base method

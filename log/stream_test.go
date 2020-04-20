@@ -20,43 +20,34 @@ func (m logMessageMatcher) String() string {
 }
 
 func Test_Stream_HasChannel(t *testing.T) {
-	t.Run("should correctly check the registration of a channel", func(t *testing.T) {
-		action := "Checking for the existence of a channel in the file stream"
+	channels := []string{"channel.1", "channel.2"}
+	stream := &stream{nil, channels, WARNING}
 
-		channels := []string{"channel.1", "channel.2"}
-
-		stream := &stream{nil, channels, WARNING}
+	t.Run("check the channel registration", func(t *testing.T) {
 
 		if !stream.HasChannel("channel.1") {
-			t.Errorf("%s the 'channel.1' channel was not found", action)
-		}
-		if !stream.HasChannel("channel.2") {
-			t.Errorf("%s the 'channel.2' channel was not found", action)
-		}
-		if stream.HasChannel("channel.3") {
-			t.Errorf("%s The 'channel.3' channel was found", action)
+			t.Errorf("'channel.1' channel was not found")
+		} else if !stream.HasChannel("channel.2") {
+			t.Errorf("'channel.2' channel was not found")
+		} else if stream.HasChannel("channel.3") {
+			t.Errorf("'channel.3' channel was found")
 		}
 	})
 }
 
 func Test_Stream_ListChannels(t *testing.T) {
-	t.Run("should correctly list the registed channels", func(t *testing.T) {
-		action := "Retrieveing the list of channels in the file stream"
+	channels := []string{"channel.1", "channel.2"}
+	stream := &stream{nil, channels, WARNING}
 
-		channels := []string{"channel.1", "channel.2"}
-
-		stream := &stream{nil, channels, WARNING}
-
+	t.Run("list the registed channels", func(t *testing.T) {
 		if result := stream.ListChannels(); !reflect.DeepEqual(result, channels) {
-			t.Errorf("%s retrieved the (%v) list of channels, expected (%v)", action, result, channels)
+			t.Errorf("returned the (%v) list of channels", result)
 		}
 	})
 }
 
 func Test_Stream_AddChannel(t *testing.T) {
-	t.Run("should correctly register a new channel", func(t *testing.T) {
-		action := "Adding a channel into the file stream"
-
+	t.Run("register a new channel", func(t *testing.T) {
 		scenarios := []struct {
 			state struct {
 				channels []string
@@ -65,8 +56,7 @@ func Test_Stream_AddChannel(t *testing.T) {
 			channel  string
 			expected []string
 		}{
-			// adding into a empty list
-			{
+			{ // adding into a empty list
 				state: struct {
 					channels []string
 					level    Level
@@ -77,8 +67,7 @@ func Test_Stream_AddChannel(t *testing.T) {
 				channel:  "channel.1",
 				expected: []string{"channel.1"},
 			},
-			// adding should keep sorting
-			{
+			{ // adding should keep sorting
 				state: struct {
 					channels []string
 					level    Level
@@ -89,8 +78,7 @@ func Test_Stream_AddChannel(t *testing.T) {
 				channel:  "channel.2",
 				expected: []string{"channel.1", "channel.2", "channel.3"},
 			},
-			// adding an already existent should result in a no-op
-			{
+			{ // adding an already existent should result in a no-op
 				state: struct {
 					channels []string
 					level    Level
@@ -105,20 +93,17 @@ func Test_Stream_AddChannel(t *testing.T) {
 
 		for _, scn := range scenarios {
 			stream := &stream{nil, scn.state.channels, scn.state.level}
-
 			stream.AddChannel(scn.channel)
 
 			if result := stream.ListChannels(); !reflect.DeepEqual(result, scn.expected) {
-				t.Errorf("%s unexpected (%v) resulting list of channels, expected (%v)", action, result, scn.expected)
+				t.Errorf("returned the (%v) list of channels", result)
 			}
 		}
 	})
 }
 
 func Test_Stream_RemoveChannel(t *testing.T) {
-	t.Run("should correctly unregister a channel", func(t *testing.T) {
-		action := "Removing a channel from the file stream"
-
+	t.Run("unregister a channel", func(t *testing.T) {
 		scenarios := []struct {
 			state struct {
 				channels []string
@@ -127,8 +112,7 @@ func Test_Stream_RemoveChannel(t *testing.T) {
 			channel  string
 			expected []string
 		}{
-			// removing from an empty list
-			{
+			{ // removing from an empty list
 				state: struct {
 					channels []string
 					level    Level
@@ -139,8 +123,7 @@ func Test_Stream_RemoveChannel(t *testing.T) {
 				channel:  "channel.1",
 				expected: []string{},
 			},
-			// removing a non existing channel
-			{
+			{ // removing a non existing channel
 				state: struct {
 					channels []string
 					level    Level
@@ -151,8 +134,7 @@ func Test_Stream_RemoveChannel(t *testing.T) {
 				channel:  "channel.2",
 				expected: []string{"channel.1", "channel.3"},
 			},
-			// removing an existing channel
-			{
+			{ // removing an existing channel
 				state: struct {
 					channels []string
 					level    Level
@@ -167,26 +149,22 @@ func Test_Stream_RemoveChannel(t *testing.T) {
 
 		for _, scn := range scenarios {
 			stream := &stream{nil, scn.state.channels, scn.state.level}
-
 			stream.RemoveChannel(scn.channel)
 
 			if result := stream.ListChannels(); !reflect.DeepEqual(result, scn.expected) {
-				t.Errorf("%s unexpected (%v) resulting list of channels, expected (%v)", action, result, scn.expected)
+				t.Errorf("returned the (%v) list of channels", result)
 			}
 		}
 	})
 }
 
 func Test_Stream_Level(t *testing.T) {
-	t.Run("should correctly retrieve the filtering level", func(t *testing.T) {
-		action := "Retrieving the filtering level of the file stream"
+	level := WARNING
+	stream := &stream{nil, []string{}, level}
 
-		level := WARNING
-
-		stream := &stream{nil, []string{}, level}
-
+	t.Run("retrieve the filtering level", func(t *testing.T) {
 		if result := stream.Level(); result != level {
-			t.Errorf("%s received the (%v) list of channels, expected (%v)", action, result, level)
+			t.Errorf("returned the (%v) level", result)
 		}
 	})
 }

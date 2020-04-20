@@ -35,6 +35,237 @@ func (m *MockEngine) EXPECT() *MockEngineMockRecorder {
 	return m.recorder
 }
 
+// Use mocks base method
+func (m *MockEngine) Use(arg0 ...gin.HandlerFunc) gin.IRoutes {
+	m.ctrl.T.Helper()
+	varargs := []interface{}{}
+	for _, a := range arg0 {
+		varargs = append(varargs, a)
+	}
+	ret := m.ctrl.Call(m, "Use", varargs...)
+	ret0, _ := ret[0].(gin.IRoutes)
+	return ret0
+}
+
+// Use indicates an expected call of Use
+func (mr *MockEngineMockRecorder) Use(arg0 ...interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Use", reflect.TypeOf((*MockEngine)(nil).Use), arg0...)
+}
+
+// Handle mocks base method
+func (m *MockEngine) Handle(arg0, arg1 string, arg2 ...gin.HandlerFunc) gin.IRoutes {
+	m.ctrl.T.Helper()
+	varargs := []interface{}{arg0, arg1}
+	for _, a := range arg2 {
+		varargs = append(varargs, a)
+	}
+	ret := m.ctrl.Call(m, "Handle", varargs...)
+	ret0, _ := ret[0].(gin.IRoutes)
+	return ret0
+}
+
+// Handle indicates an expected call of Handle
+func (mr *MockEngineMockRecorder) Handle(arg0, arg1 interface{}, arg2 ...interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	varargs := append([]interface{}{arg0, arg1}, arg2...)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Handle", reflect.TypeOf((*MockEngine)(nil).Handle), varargs...)
+}
+
+// Any mocks base method
+func (m *MockEngine) Any(arg0 string, arg1 ...gin.HandlerFunc) gin.IRoutes {
+	m.ctrl.T.Helper()
+	varargs := []interface{}{arg0}
+	for _, a := range arg1 {
+		varargs = append(varargs, a)
+	}
+	ret := m.ctrl.Call(m, "Any", varargs...)
+	ret0, _ := ret[0].(gin.IRoutes)
+	return ret0
+}
+
+// Any indicates an expected call of Any
+func (mr *MockEngineMockRecorder) Any(arg0 interface{}, arg1 ...interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	varargs := append([]interface{}{arg0}, arg1...)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Any", reflect.TypeOf((*MockEngine)(nil).Any), varargs...)
+}
+
+// GET mocks base method
+func (m *MockEngine) GET(arg0 string, arg1 ...gin.HandlerFunc) gin.IRoutes {
+	m.ctrl.T.Helper()
+	varargs := []interface{}{arg0}
+	for _, a := range arg1 {
+		varargs = append(varargs, a)
+	}
+	ret := m.ctrl.Call(m, "GET", varargs...)
+	ret0, _ := ret[0].(gin.IRoutes)
+	return ret0
+}
+
+// GET indicates an expected call of GET
+func (mr *MockEngineMockRecorder) GET(arg0 interface{}, arg1 ...interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	varargs := append([]interface{}{arg0}, arg1...)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GET", reflect.TypeOf((*MockEngine)(nil).GET), varargs...)
+}
+
+// POST mocks base method
+func (m *MockEngine) POST(arg0 string, arg1 ...gin.HandlerFunc) gin.IRoutes {
+	m.ctrl.T.Helper()
+	varargs := []interface{}{arg0}
+	for _, a := range arg1 {
+		varargs = append(varargs, a)
+	}
+	ret := m.ctrl.Call(m, "POST", varargs...)
+	ret0, _ := ret[0].(gin.IRoutes)
+	return ret0
+}
+
+// POST indicates an expected call of POST
+func (mr *MockEngineMockRecorder) POST(arg0 interface{}, arg1 ...interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	varargs := append([]interface{}{arg0}, arg1...)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "POST", reflect.TypeOf((*MockEngine)(nil).POST), varargs...)
+}
+
+// DELETE mocks base method
+func (m *MockEngine) DELETE(arg0 string, arg1 ...gin.HandlerFunc) gin.IRoutes {
+	m.ctrl.T.Helper()
+	varargs := []interface{}{arg0}
+	for _, a := range arg1 {
+		varargs = append(varargs, a)
+	}
+	ret := m.ctrl.Call(m, "DELETE", varargs...)
+	ret0, _ := ret[0].(gin.IRoutes)
+	return ret0
+}
+
+// DELETE indicates an expected call of DELETE
+func (mr *MockEngineMockRecorder) DELETE(arg0 interface{}, arg1 ...interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	varargs := append([]interface{}{arg0}, arg1...)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "DELETE", reflect.TypeOf((*MockEngine)(nil).DELETE), varargs...)
+}
+
+// PATCH mocks base method
+func (m *MockEngine) PATCH(arg0 string, arg1 ...gin.HandlerFunc) gin.IRoutes {
+	m.ctrl.T.Helper()
+	varargs := []interface{}{arg0}
+	for _, a := range arg1 {
+		varargs = append(varargs, a)
+	}
+	ret := m.ctrl.Call(m, "PATCH", varargs...)
+	ret0, _ := ret[0].(gin.IRoutes)
+	return ret0
+}
+
+// PATCH indicates an expected call of PATCH
+func (mr *MockEngineMockRecorder) PATCH(arg0 interface{}, arg1 ...interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	varargs := append([]interface{}{arg0}, arg1...)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "PATCH", reflect.TypeOf((*MockEngine)(nil).PATCH), varargs...)
+}
+
+// PUT mocks base method
+func (m *MockEngine) PUT(arg0 string, arg1 ...gin.HandlerFunc) gin.IRoutes {
+	m.ctrl.T.Helper()
+	varargs := []interface{}{arg0}
+	for _, a := range arg1 {
+		varargs = append(varargs, a)
+	}
+	ret := m.ctrl.Call(m, "PUT", varargs...)
+	ret0, _ := ret[0].(gin.IRoutes)
+	return ret0
+}
+
+// PUT indicates an expected call of PUT
+func (mr *MockEngineMockRecorder) PUT(arg0 interface{}, arg1 ...interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	varargs := append([]interface{}{arg0}, arg1...)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "PUT", reflect.TypeOf((*MockEngine)(nil).PUT), varargs...)
+}
+
+// OPTIONS mocks base method
+func (m *MockEngine) OPTIONS(arg0 string, arg1 ...gin.HandlerFunc) gin.IRoutes {
+	m.ctrl.T.Helper()
+	varargs := []interface{}{arg0}
+	for _, a := range arg1 {
+		varargs = append(varargs, a)
+	}
+	ret := m.ctrl.Call(m, "OPTIONS", varargs...)
+	ret0, _ := ret[0].(gin.IRoutes)
+	return ret0
+}
+
+// OPTIONS indicates an expected call of OPTIONS
+func (mr *MockEngineMockRecorder) OPTIONS(arg0 interface{}, arg1 ...interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	varargs := append([]interface{}{arg0}, arg1...)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "OPTIONS", reflect.TypeOf((*MockEngine)(nil).OPTIONS), varargs...)
+}
+
+// HEAD mocks base method
+func (m *MockEngine) HEAD(arg0 string, arg1 ...gin.HandlerFunc) gin.IRoutes {
+	m.ctrl.T.Helper()
+	varargs := []interface{}{arg0}
+	for _, a := range arg1 {
+		varargs = append(varargs, a)
+	}
+	ret := m.ctrl.Call(m, "HEAD", varargs...)
+	ret0, _ := ret[0].(gin.IRoutes)
+	return ret0
+}
+
+// HEAD indicates an expected call of HEAD
+func (mr *MockEngineMockRecorder) HEAD(arg0 interface{}, arg1 ...interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	varargs := append([]interface{}{arg0}, arg1...)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "HEAD", reflect.TypeOf((*MockEngine)(nil).HEAD), varargs...)
+}
+
+// StaticFile mocks base method
+func (m *MockEngine) StaticFile(arg0, arg1 string) gin.IRoutes {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "StaticFile", arg0, arg1)
+	ret0, _ := ret[0].(gin.IRoutes)
+	return ret0
+}
+
+// StaticFile indicates an expected call of StaticFile
+func (mr *MockEngineMockRecorder) StaticFile(arg0, arg1 interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "StaticFile", reflect.TypeOf((*MockEngine)(nil).StaticFile), arg0, arg1)
+}
+
+// Static mocks base method
+func (m *MockEngine) Static(arg0, arg1 string) gin.IRoutes {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "Static", arg0, arg1)
+	ret0, _ := ret[0].(gin.IRoutes)
+	return ret0
+}
+
+// Static indicates an expected call of Static
+func (mr *MockEngineMockRecorder) Static(arg0, arg1 interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Static", reflect.TypeOf((*MockEngine)(nil).Static), arg0, arg1)
+}
+
+// StaticFS mocks base method
+func (m *MockEngine) StaticFS(arg0 string, arg1 http.FileSystem) gin.IRoutes {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "StaticFS", arg0, arg1)
+	ret0, _ := ret[0].(gin.IRoutes)
+	return ret0
+}
+
+// StaticFS indicates an expected call of StaticFS
+func (mr *MockEngineMockRecorder) StaticFS(arg0, arg1 interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "StaticFS", reflect.TypeOf((*MockEngine)(nil).StaticFS), arg0, arg1)
+}
+
 // Delims mocks base method
 func (m *MockEngine) Delims(left, right string) *gin.Engine {
 	m.ctrl.T.Helper()
@@ -145,24 +376,6 @@ func (m *MockEngine) NoMethod(handlers ...gin.HandlerFunc) {
 func (mr *MockEngineMockRecorder) NoMethod(handlers ...interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "NoMethod", reflect.TypeOf((*MockEngine)(nil).NoMethod), handlers...)
-}
-
-// Use mocks base method
-func (m *MockEngine) Use(middleware ...gin.HandlerFunc) gin.IRoutes {
-	m.ctrl.T.Helper()
-	varargs := []interface{}{}
-	for _, a := range middleware {
-		varargs = append(varargs, a)
-	}
-	ret := m.ctrl.Call(m, "Use", varargs...)
-	ret0, _ := ret[0].(gin.IRoutes)
-	return ret0
-}
-
-// Use indicates an expected call of Use
-func (mr *MockEngineMockRecorder) Use(middleware ...interface{}) *gomock.Call {
-	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Use", reflect.TypeOf((*MockEngine)(nil).Use), middleware...)
 }
 
 // Routes mocks base method

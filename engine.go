@@ -9,6 +9,7 @@ import (
 
 // Engine interface for the gin-gonic engine object.
 type Engine interface {
+	gin.IRoutes
 	Delims(left, right string) *gin.Engine
 	SecureJsonPrefix(prefix string) *gin.Engine
 	LoadHTMLGlob(pattern string)
@@ -17,7 +18,6 @@ type Engine interface {
 	SetFuncMap(funcMap template.FuncMap)
 	NoRoute(handlers ...gin.HandlerFunc)
 	NoMethod(handlers ...gin.HandlerFunc)
-	Use(middleware ...gin.HandlerFunc) gin.IRoutes
 	Routes() gin.RoutesInfo
 	Run(addr ...string) error
 	RunTLS(addr, certFile, keyFile string) error

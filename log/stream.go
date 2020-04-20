@@ -2,15 +2,15 @@ package log
 
 import "sort"
 
-// F defines the type of fields data to be passed to the logging process
-// that describes a list of extra data of the logging entry.
+// F defines the type of data fields  to be passed to the logging process
+// that describes a list of extra content to be added to the logging entry.
 type F map[string]interface{}
 
 // Stream interface defines the interaction methods with a logging stream.
 type Stream interface {
 	Close() error
-	Signal(channel string, level Level, fields F, message string) error
-	Broadcast(level Level, fields F, message string) error
+	Signal(channel string, level Level, message string, fields F) error
+	Broadcast(level Level, message string, fields F) error
 	HasChannel(channel string) bool
 	ListChannels() []string
 	AddChannel(channel string)
@@ -60,9 +60,9 @@ func (s stream) Level() Level {
 	return s.level
 }
 
-func (s stream) format(level Level, fields F, message string) string {
+func (s stream) format(level Level, message string, fields F) string {
 	if s.formatter != nil {
-		message = s.formatter.Format(level, fields, message)
+		message = s.formatter.Format(level, message, fields)
 	}
 	return message
 }

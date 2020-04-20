@@ -38,7 +38,7 @@ func NewFileStreamFactoryStrategy(fileSystem afero.Fs, formatterFactory Formatte
 }
 
 // Accept will check if the file stream factory strategy can instantiate a
-// stream of the requested type and parameters.
+// stream of the requested type and with the calling parameters.
 func (fileStreamFactoryStrategy) Accept(stype string, args ...interface{}) bool {
 	if stype != StreamTypeFile || len(args) < 4 {
 		return false
@@ -72,7 +72,7 @@ func (fileStreamFactoryStrategy) Accept(stype string, args ...interface{}) bool 
 }
 
 // AcceptConfig will check if the stream factory strategy can instantiate a
-// stream where the data to check comes from a configuration instance.
+// stream where the data to check comes from a configuration partial instance.
 func (s fileStreamFactoryStrategy) AcceptConfig(conf config.Partial) (check bool) {
 	defer func() {
 		if r := recover(); r != nil {

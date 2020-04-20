@@ -7,21 +7,21 @@ import (
 )
 
 func Test_NewYamlDecoderFactoryStrategy(t *testing.T) {
-	t.Run("creates a new yaml decoder factory strategy", func(t *testing.T) {
-		action := "Creating a yaml decoder factory strategy"
-
-		strategy := NewYamlDecoderFactoryStrategy()
-
-		if strategy == nil {
-			t.Errorf("%s didn't return a valid reference to a new yaml decoder factory strategy", action)
+	t.Run("creates a new strategy", func(t *testing.T) {
+		if strategy := NewYamlDecoderFactoryStrategy(); strategy == nil {
+			t.Errorf("didn't return a valid reference")
 		}
 	})
 }
 
 func Test_YamlDecoderFactoryStrategy_Accept(t *testing.T) {
-	t.Run("should accept only yaml format", func(t *testing.T) {
-		action := "Checking the accepting format"
+	ctrl := gomock.NewController(t)
+	defer ctrl.Finish()
 
+	reader := NewMockReader(ctrl, "{}")
+	strategy := NewYamlDecoderFactoryStrategy()
+
+	t.Run("accept only yaml format", func(t *testing.T) {
 		scenarios := []struct {
 			format   string
 			expected bool
@@ -37,63 +37,42 @@ func Test_YamlDecoderFactoryStrategy_Accept(t *testing.T) {
 		}
 
 		for _, scn := range scenarios {
-			ctrl := gomock.NewController(t)
-			defer ctrl.Finish()
-
-			reader := NewMockReader(ctrl, "{}")
-
-			strategy := NewYamlDecoderFactoryStrategy()
-
 			if check := strategy.Accept(scn.format, reader); check != scn.expected {
-				t.Errorf("%s didn't returned the expected (%v) for the format (%s), returned (%v)", action, scn.expected, scn.format, check)
+				t.Errorf("returned (%v) when checking (%s) format", check, scn.format)
 			}
 		}
 	})
 
-	t.Run("should not accept if no extra arguments are passed (the reader)", func(t *testing.T) {
-		action := "Checking the acceptance with no extra arguments"
-
-		strategy := NewYamlDecoderFactoryStrategy()
-
+	t.Run("no extra arguments", func(t *testing.T) {
 		if strategy.Accept(DecoderFormatYAML) {
-			t.Errorf("%s didn't returned the expected false", action)
+			t.Errorf("returned true")
 		}
 	})
 
-	t.Run("should not accept if the first extra argument is not a io.Reader interface", func(t *testing.T) {
-		action := "Checking the acceptance when the first extra argument not a io.Reader interface"
-
-		strategy := NewYamlDecoderFactoryStrategy()
-
-		if strategy.Accept(DecoderFormatYAML, "__string__") {
-			t.Errorf("%s didn't returned the expected false", action)
+	t.Run("first extra argument is not a io.Reader interface", func(t *testing.T) {
+		if strategy.Accept(DecoderFormatYAML, "string") {
+			t.Errorf("returned true")
 		}
 	})
 }
 
 func Test_YamlDecoderFactoryStrategy_Create(t *testing.T) {
-	t.Run("should create the requested yaml config decoder", func(t *testing.T) {
-		action := "Creating a new yaml decoder"
+	ctrl := gomock.NewController(t)
+	defer ctrl.Finish()
 
-		ctrl := gomock.NewController(t)
-		defer ctrl.Finish()
+	reader := NewMockReader(ctrl, "{}")
+	strategy := NewYamlDecoderFactoryStrategy()
 
-		reader := NewMockReader(ctrl, "{}")
-
-		strategy := NewYamlDecoderFactoryStrategy()
-
-		decoder, err := strategy.Create(reader)
-		if err != nil {
-			t.Errorf("%s return the unexpected error : %v", action, err)
-		}
-
-		if decoder == nil {
-			t.Errorf("%s didn't returned a valid config decoder reference", action)
+	t.Run("create the decoder", func(t *testing.T) {
+		if decoder, err := strategy.Create(reader); err != nil {
+			t.Errorf("return the (%v) error", err)
+		} else if decoder == nil {
+			t.Errorf("didn't return a valid reference")
 		} else {
 			switch decoder.(type) {
 			case *yamlDecoder:
 			default:
-				t.Errorf("%s didn't return a valid reference to a new YAML decoder reference", action)
+				t.Errorf("didn't return a YAML decoder")
 			}
 		}
 	})

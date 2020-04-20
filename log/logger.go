@@ -4,11 +4,12 @@ import (
 	"fmt"
 )
 
-// Logger interface defines the methods of a logger instance.
+// Logger interface defines the methods of a logger instance used to proxy
+// between the application and all the registed output streams.
 type Logger interface {
 	Close() error
-	Signal(channel string, level Level, fields F, message string) error
-	Broadcast(level Level, fields F, message string) error
+	Signal(channel string, level Level, message string, fields F) error
+	Broadcast(level Level, message string, fields F) error
 	HasStream(id string) bool
 	AddStream(id string, stream Stream) error
 	RemoveStream(id string)
@@ -37,9 +38,9 @@ func (l *logger) Close() error {
 
 // Signal will propagate the channel filtered logging request
 // to all stored logging streams.
-func (l logger) Signal(channel string, level Level, fields F, message string) error {
+func (l logger) Signal(channel string, level Level, message string, fields F) error {
 	for _, stream := range l.streams {
-		if err := stream.Signal(channel, level, fields, message); err != nil {
+		if err := stream.Signal(channel, level, message, fields); err != nil {
 			return err
 		}
 	}
@@ -47,9 +48,9 @@ func (l logger) Signal(channel string, level Level, fields F, message string) er
 }
 
 // Broadcast will propagate the logging request to all stored logging streams.
-func (l logger) Broadcast(level Level, fields F, message string) error {
+func (l logger) Broadcast(level Level, message string, fields F) error {
 	for _, stream := range l.streams {
-		if err := stream.Broadcast(level, fields, message); err != nil {
+		if err := stream.Broadcast(level, message, fields); err != nil {
 			return err
 		}
 	}

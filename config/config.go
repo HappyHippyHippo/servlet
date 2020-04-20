@@ -11,17 +11,8 @@ import (
 	"github.com/happyhippyhippo/servlet/trigger"
 )
 
-// Observer callback function used to be called when a observed
-// configuration path has changed his value.
-type Observer func(interface{}, interface{})
-
-type refOberserver struct {
-	path     string
-	current  interface{}
-	callback Observer
-}
-
-// Config interface defines the interaction with the configuration object.
+// Config interface defines the interaction methods of a configuration instance
+// that is responsable to manage a list of configuration sources.
 type Config interface {
 	Close() error
 	Has(path string) bool
@@ -73,6 +64,12 @@ func (sources refSourceSortByPriority) Less(i, j int) bool {
 	return sources[i].priority < sources[j].priority
 }
 
+type refOberserver struct {
+	path     string
+	current  interface{}
+	callback Observer
+}
+
 type config struct {
 	mutex     sys.RWMutex
 	sources   []refSource
@@ -82,6 +79,9 @@ type config struct {
 }
 
 // NewConfig instatiate a new configuration object.
+// This object will manage a series of sources, along side of the ability of
+// registration of configuration path/values observer callbacks that will be
+// called whenever the value has changed.
 func NewConfig(period time.Duration) (Config, error) {
 	var c *config
 
@@ -121,7 +121,8 @@ func (c *config) Close() error {
 	return nil
 }
 
-// Has will check if a path has been loaded in any registed source.
+// Has will check if a path has been loaded.
+// This means that if the values has been loaded by any registed source.
 func (c *config) Has(path string) bool {
 	c.mutex.RLock()
 	defer c.mutex.RUnlock()
@@ -282,7 +283,7 @@ func (c *config) GetString(path string, def ...string) string {
 	return c.Get(path).(string)
 }
 
-// HasSource check if a source with a specific id has been loaded.
+// HasSource check if a source with a specific id has been registed.
 func (c *config) HasSource(id string) bool {
 	c.mutex.RLock()
 	defer c.mutex.RUnlock()
@@ -295,7 +296,7 @@ func (c *config) HasSource(id string) bool {
 	return false
 }
 
-// AddSource register a new source with a specific id and a defined priority.
+// AddSource register a new source with a specific id with a given priority.
 func (c *config) AddSource(id string, priority int, source Source) error {
 	if source == nil {
 		return fmt.Errorf("Invalid nil 'source' argument")
@@ -315,7 +316,8 @@ func (c *config) AddSource(id string, priority int, source Source) error {
 }
 
 // RemoveSource remove a source from the registration list
-// of the configuration.
+// of the configuration. This will also update the configuration content and
+// revalidate the observed paths.
 func (c *config) RemoveSource(id string) {
 	c.mutex.Lock()
 	defer c.mutex.Unlock()
@@ -330,7 +332,7 @@ func (c *config) RemoveSource(id string) {
 	}
 }
 
-// Source retrieve ta previously registed source with a required id.
+// Source retrieve a previously registed source with a requested id.
 func (c *config) Source(id string) (Source, error) {
 	c.mutex.RLock()
 	defer c.mutex.RUnlock()
@@ -344,7 +346,8 @@ func (c *config) Source(id string) (Source, error) {
 }
 
 // SourcePriority set a priority value of a previously registed
-// source with the specified id,
+// source with the specified id. This may change the defined values if there
+// was a override process of the configuration paths of the changing source.
 func (c *config) SourcePriority(id string, priority int) error {
 	c.mutex.Lock()
 	defer c.mutex.Unlock()
@@ -352,6 +355,7 @@ func (c *config) SourcePriority(id string, priority int) error {
 	for _, reg := range c.sources {
 		if reg.id == id {
 			reg.priority = priority
+			sort.Sort(refSourceSortByPriority(c.sources))
 			c.rebuild()
 
 			return nil
@@ -360,8 +364,7 @@ func (c *config) SourcePriority(id string, priority int) error {
 	return fmt.Errorf("Source not found : %s", id)
 }
 
-// HasObserver check if there is already an observer to a
-// configuration value path.
+// HasObserver check if there is a observer to a configuration value path.
 func (c *config) HasObserver(path string) bool {
 	c.mutex.RLock()
 	defer c.mutex.RUnlock()

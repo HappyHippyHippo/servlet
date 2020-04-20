@@ -10,172 +10,118 @@ import (
 
 func Test_NewStreamFactory(t *testing.T) {
 	t.Run("create a new config stream factory", func(t *testing.T) {
-		action := "Creating a new config stream factory"
-
-		factory := NewStreamFactory()
-
-		if factory == nil {
-			t.Errorf("%s didn't return a valid reference to a new stream factory", action)
+		if NewStreamFactory() == nil {
+			t.Errorf("didn't return a valid reference")
 		}
 	})
 }
 
 func Test_StreamFactory_Register(t *testing.T) {
-	t.Run("should return a error if passing a nil strategy", func(t *testing.T) {
-		action := "Registering a nil strategy"
+	ctrl := gomock.NewController(t)
+	defer ctrl.Finish()
 
-		expected := "Invalid nil 'strategy' argument"
+	strategy := NewMockStreamFactoryStrategy(ctrl)
+	factory := NewStreamFactory()
 
-		ctrl := gomock.NewController(t)
-		defer ctrl.Finish()
-
-		factory := NewStreamFactory()
-
-		err := factory.Register(nil)
-		if err == nil {
-			t.Errorf("%s didn't return the expected error", action)
-		} else {
-			if check := err.Error(); check != expected {
-				t.Errorf("%s return the error (%s) when expecting (%s)", action, check, expected)
-			}
+	t.Run("error if passing a nil strategy", func(t *testing.T) {
+		if err := factory.Register(nil); err == nil {
+			t.Errorf("didn't return the expected error")
+		} else if check := err.Error(); check != "Invalid nil 'strategy' argument" {
+			t.Errorf("return the (%v) error", check)
 		}
 	})
 
-	t.Run("should correctly register the stream factory strategy", func(t *testing.T) {
-		action := "Registering a stream factory strategy"
-
-		ctrl := gomock.NewController(t)
-		defer ctrl.Finish()
-
-		strategy := NewMockStreamFactoryStrategy(ctrl)
-
-		factory := NewStreamFactory()
-
-		err := factory.Register(strategy)
-		if err != nil {
-			t.Errorf("%s return a unexpected error : %s", action, err.Error())
-		}
-
-		if factory.(*streamFactory).strategies[0] != strategy {
-			t.Errorf("%s didn't stored the strategy in the factory", action)
+	t.Run("register the stream factory strategy", func(t *testing.T) {
+		if err := factory.Register(strategy); err != nil {
+			t.Errorf("returned the (%v) error", err)
+		} else if factory.(*streamFactory).strategies[0] != strategy {
+			t.Errorf("didn't stored the strategy")
 		}
 	})
 }
 
 func Test_StreamFactory_Create(t *testing.T) {
-	t.Run("should return a error signaling that the format is unrecognized", func(t *testing.T) {
-		action := "Creating a invalid format stream"
+	stype := "type"
+	path := "path"
+	format := "format"
 
-		stype := "__type__"
-		path := "__path__"
-		format := "__format__"
-		expected := "Unrecognized stream type : __type__"
-
+	t.Run("error if the format is unrecognized", func(t *testing.T) {
 		ctrl := gomock.NewController(t)
 		defer ctrl.Finish()
+
+		factory := NewStreamFactory()
 
 		strategy := NewMockStreamFactoryStrategy(ctrl)
 		strategy.EXPECT().Accept(stype, path, format).Return(false).Times(1)
-
-		factory := NewStreamFactory()
 		factory.Register(strategy)
 
-		decoder, err := factory.Create(stype, path, format)
-		if err == nil {
-			t.Errorf("%s didn't return the expected error", action)
-		} else {
-			if check := err.Error(); check != expected {
-				t.Errorf("%s returned the error (%s) when expected (%s)", action, check, expected)
-			}
-		}
-		if decoder != nil {
-			t.Errorf("%s returned an unexpected config stream reference", action)
+		if stream, err := factory.Create(stype, path, format); stream != nil {
+			t.Errorf("returned an valid reference")
+		} else if err == nil {
+			t.Errorf("didn't return the expected error")
+		} else if err.Error() != "Unrecognized stream type : type" {
+			t.Errorf("returned the (%v) error", err)
 		}
 	})
 
-	t.Run("should create the requested config stream", func(t *testing.T) {
-		action := "Creating a new stream"
-
-		stype := "__type__"
-		path := "__path__"
-		format := "__format__"
-
+	t.Run("create the config stream", func(t *testing.T) {
 		ctrl := gomock.NewController(t)
 		defer ctrl.Finish()
 
-		stream := NewMockStream(ctrl)
+		factory := NewStreamFactory()
 
+		stream := NewMockStream(ctrl)
 		strategy := NewMockStreamFactoryStrategy(ctrl)
 		strategy.EXPECT().Accept(stype, path, format).Return(true).Times(1)
 		strategy.EXPECT().Create(path, format).Return(stream, nil).Times(1)
-
-		factory := NewStreamFactory()
 		factory.Register(strategy)
 
-		check, err := factory.Create(stype, path, format)
-		if err != nil {
-			t.Errorf("%s return the unexpected error : %v", action, err)
-		}
-
-		if !reflect.DeepEqual(check, stream) {
-			t.Errorf("%s didn't returned the created stream", action)
+		if stream, err := factory.Create(stype, path, format); err != nil {
+			t.Errorf("returned the (%v) error", err)
+		} else if !reflect.DeepEqual(stream, stream) {
+			t.Errorf("didn't returned the created stream")
 		}
 	})
 }
 
 func Test_StreamFactory_CreateConfig(t *testing.T) {
-	t.Run("should return a error signaling that the format is unrecognized", func(t *testing.T) {
-		action := "Creating a invalid format stream"
-
-		expected := "Unrecognized stream config : "
-
+	t.Run("error on unrecognized type", func(t *testing.T) {
 		ctrl := gomock.NewController(t)
 		defer ctrl.Finish()
 
-		conf := NewMockPartial(ctrl)
+		factory := NewStreamFactory()
 
+		conf := NewMockPartial(ctrl)
 		strategy := NewMockStreamFactoryStrategy(ctrl)
 		strategy.EXPECT().AcceptConfig(conf).Return(false).Times(1)
-
-		factory := NewStreamFactory()
 		factory.Register(strategy)
 
-		decoder, err := factory.CreateConfig(conf)
-		if err == nil {
-			t.Errorf("%s didn't return the expected error", action)
-		} else {
-			if check := err.Error(); check != fmt.Sprintf("%s%v", expected, conf) {
-				t.Errorf("%s returned the error (%s) when expected (%s)", action, check, expected)
-			}
-		}
-		if decoder != nil {
-			t.Errorf("%s returned an unexpected config stream reference", action)
+		if stream, err := factory.CreateConfig(conf); err == nil {
+			t.Errorf("didn't return the expected error")
+		} else if err.Error() != fmt.Sprintf("Unrecognized stream config : %v", conf) {
+			t.Errorf("returned the (%v) error", err)
+		} else if stream != nil {
+			t.Errorf("returned a config stream")
 		}
 	})
 
-	t.Run("should create the requested config stream", func(t *testing.T) {
-		action := "Creating a new stream"
-
+	t.Run("create the config stream", func(t *testing.T) {
 		ctrl := gomock.NewController(t)
 		defer ctrl.Finish()
 
+		factory := NewStreamFactory()
+
 		conf := NewMockPartial(ctrl)
 		stream := NewMockStream(ctrl)
-
 		strategy := NewMockStreamFactoryStrategy(ctrl)
 		strategy.EXPECT().AcceptConfig(conf).Return(true).Times(1)
 		strategy.EXPECT().CreateConfig(conf).Return(stream, nil).Times(1)
-
-		factory := NewStreamFactory()
 		factory.Register(strategy)
 
-		check, err := factory.CreateConfig(conf)
-		if err != nil {
-			t.Errorf("%s return the unexpected error : %v", action, err)
-		}
-
-		if !reflect.DeepEqual(check, stream) {
-			t.Errorf("%s didn't returned the created stream", action)
+		if stream, err := factory.CreateConfig(conf); err != nil {
+			t.Errorf("returned the (%v) error", err)
+		} else if !reflect.DeepEqual(stream, stream) {
+			t.Errorf("didn't returned the created stream")
 		}
 	})
 }

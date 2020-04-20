@@ -22,8 +22,10 @@ func NewDecoderFactory() DecoderFactory {
 	}
 }
 
-// Register will register a new decoder factory strategy to be used
-// on creation request.
+// Register will stores a new decoder factory strategy to be used
+// to evalutate a request of a instance capable to parse a specific format.
+// If the strategy accepts the format, then it will be used to instantiate the
+// appropriate decoder that will be used to decode the configuration content.
 func (f *decoderFactory) Register(strategy DecoderFactoryStrategy) error {
 	if strategy == nil {
 		return fmt.Errorf("Invalid nil 'strategy' argument")
@@ -34,7 +36,8 @@ func (f *decoderFactory) Register(strategy DecoderFactoryStrategy) error {
 	return nil
 }
 
-// Create will instantiate and return a new content decoder.
+// Create will instantiate the requested new decoder capable to
+// parse the formatted content into a usable configuration partial.
 func (f decoderFactory) Create(format string, args ...interface{}) (Decoder, error) {
 	for _, s := range f.strategies {
 		if s.Accept(format, args...) {

@@ -23,7 +23,7 @@ func NewFormatterFactory() FormatterFactory {
 }
 
 // Register will register a new formatter factory strategy to be used
-// on creation request.
+// on requesting to create a formatter for a defined format.
 func (f *formatterFactory) Register(strategy FormatterFactoryStrategy) error {
 	if strategy == nil {
 		return fmt.Errorf("Invalid nil 'strategy' argument")

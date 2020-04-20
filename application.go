@@ -9,40 +9,34 @@ import (
 // Application interface used to define the methods of a servlet application.
 type Application interface {
 	Boot()
-	Run(addr ...string) error
 	Engine() Engine
 	GetContainer() Container
 	SetContainer(container Container) error
 	AddProvider(provider Provider) error
+	Run(addr ...string) error
 }
 
 type application struct {
-	parameters ApplicationParameters
-	engine     Engine
-	container  Container
-	providers  []Provider
-	boot       bool
+	engine    Engine
+	container Container
+	providers []Provider
+	boot      bool
 }
 
 // NewApplication used to instanciate a new application.
-func NewApplication(parameters ApplicationParameters) Application {
-	if parameters == nil {
-		parameters = NewDefaultApplicationParameters()
-	}
-
+func NewApplication(params Parameters) Application {
 	engine := gin.New()
 	container := NewContainer()
 
-	container.Add(parameters.GetEngineID(), func(c Container) interface{} {
+	container.Add(params.EngineID, func(c Container) interface{} {
 		return engine
 	})
 
 	return &application{
-		parameters: parameters,
-		engine:     engine,
-		container:  container,
-		providers:  []Provider{},
-		boot:       false,
+		engine:    engine,
+		container: container,
+		providers: []Provider{},
+		boot:      false,
 	}
 }
 
@@ -58,16 +52,6 @@ func (a *application) Boot() {
 
 		a.boot = true
 	}
-}
-
-// Run method will boot the application, if not yet, and the start
-// the underlying gin server.
-func (a application) Run(addr ...string) error {
-	if !a.boot {
-		a.Boot()
-	}
-
-	return a.engine.Run(addr...)
 }
 
 // Engine will retrieve the application underlying gin engine.
@@ -96,8 +80,16 @@ func (a *application) AddProvider(provider Provider) error {
 		return fmt.Errorf("Invalid nil 'provider' argument")
 	}
 
-	(*a).providers = append((*a).providers, provider)
-	provider.Register((*a).container)
+	a.providers = append(a.providers, provider)
+	provider.Register(a.container)
 
 	return nil
+}
+
+// Run method will boot the application, if not yet, and the start
+// the underlying gin server.
+func (a application) Run(addr ...string) error {
+	a.Boot()
+
+	return a.engine.Run(addr...)
 }

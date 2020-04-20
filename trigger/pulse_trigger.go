@@ -43,9 +43,8 @@ func NewPulseTrigger(delay time.Duration, callback Callback) (Trigger, error) {
 	return t, nil
 }
 
-// Close method will stop the trigger.
-// This method exists so it will compliant with the servlet Closable
-// interface.
+// Close method will stop the trigger, this means that if the trigger have not
+// yet been executed, then the associated process will not execute.
 func (t *pulseTrigger) Close() error {
 	return t.Stop()
 }

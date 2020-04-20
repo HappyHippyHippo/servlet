@@ -7,100 +7,67 @@ import (
 )
 
 func Test_NewFileStream(t *testing.T) {
-	t.Run("should return nil when missing writer", func(t *testing.T) {
-		action := "Creating a new file stream without a writer reference"
+	ctrl := gomock.NewController(t)
+	defer ctrl.Finish()
 
-		expected := "Invalid nil 'writer' argument"
+	writer := NewMockWriter(ctrl)
+	writer.EXPECT().Close().Times(1)
+	formatter := NewMockFormatter(ctrl)
+	channels := []string{}
+	level := WARNING
 
-		ctrl := gomock.NewController(t)
-		defer ctrl.Finish()
-
-		formatter := NewMockFormatter(ctrl)
-
-		stream, err := NewFileStream(nil, formatter, []string{}, WARNING)
-
-		if stream != nil {
+	t.Run("error when missing writer", func(t *testing.T) {
+		if stream, err := NewFileStream(nil, formatter, channels, level); stream != nil {
 			stream.Close()
-			t.Errorf("%s returned a valid file stream reference, expected nil", action)
-		}
-		if err == nil {
-			t.Errorf("%s didn't return a expected error", action)
-		} else {
-			if err.Error() != expected {
-				t.Errorf("%s didn't return the expected return error (%s), expected (%s)", action, err.Error(), expected)
-			}
+			t.Errorf("returned a valid reference")
+		} else if err == nil {
+			t.Errorf("didn't return the expected error")
+		} else if err.Error() != "Invalid nil 'writer' argument" {
+			t.Errorf("returned the (%v) error", err)
 		}
 	})
 
-	t.Run("should return nil when missing formatter", func(t *testing.T) {
-		action := "Creating a new file stream without a formatter reference"
-
-		expected := "Invalid nil 'formatter' argument"
-
-		ctrl := gomock.NewController(t)
-		defer ctrl.Finish()
-
-		writer := NewMockWriter(ctrl)
-
-		stream, err := NewFileStream(writer, nil, []string{}, WARNING)
-
-		if stream != nil {
+	t.Run("error when missing formatter", func(t *testing.T) {
+		if stream, err := NewFileStream(writer, nil, channels, level); stream != nil {
 			stream.Close()
-			t.Errorf("%s returned a valid file stream reference, expected nil", action)
-		}
-		if err == nil {
-			t.Errorf("%s didn't return a expected error", action)
-		} else {
-			if err.Error() != expected {
-				t.Errorf("%s didn't return the expected return error (%s), expected (%s)", action, err.Error(), expected)
-			}
+			t.Errorf("returned a valid reference")
+		} else if err == nil {
+			t.Errorf("didn't return the expected error")
+		} else if err.Error() != "Invalid nil 'formatter' argument" {
+			t.Errorf("returned the (%v) error", err)
 		}
 	})
 
 	t.Run("creates a new file stream", func(t *testing.T) {
-		action := "Creating a new file stream"
-
-		ctrl := gomock.NewController(t)
-		defer ctrl.Finish()
-
-		writer := NewMockWriter(ctrl)
-		writer.EXPECT().Close().Times(1)
-
-		formatter := NewMockFormatter(ctrl)
-
-		stream, err := NewFileStream(writer, formatter, []string{}, WARNING)
-
-		if stream == nil {
-			t.Errorf("%s didn't return a valid reference to a new file stream", action)
+		if stream, err := NewFileStream(writer, formatter, []string{}, WARNING); stream == nil {
+			t.Errorf("didn't return a valid reference")
 		} else {
 			stream.Close()
-		}
-		if err != nil {
-			t.Errorf("%s returned a unexpected error : %v", action, err)
+			if err != nil {
+				t.Errorf("returned the (%v) error", err)
+			}
 		}
 	})
 }
 
 func Test_FileStream_Close(t *testing.T) {
-	t.Run("should call the close on the writer only once", func(t *testing.T) {
-		ctrl := gomock.NewController(t)
-		defer ctrl.Finish()
+	ctrl := gomock.NewController(t)
+	defer ctrl.Finish()
 
-		writer := NewMockWriter(ctrl)
-		writer.EXPECT().Close().Times(1)
+	writer := NewMockWriter(ctrl)
+	writer.EXPECT().Close().Times(1)
+	formatter := NewMockFormatter(ctrl)
 
-		formatter := NewMockFormatter(ctrl)
+	stream, _ := NewFileStream(writer, formatter, []string{}, WARNING)
 
-		stream, _ := NewFileStream(writer, formatter, []string{}, WARNING)
+	t.Run("call the close on the writer only once", func(t *testing.T) {
 		stream.Close()
 		stream.Close()
 	})
 }
 
 func Test_FileStream_Signal(t *testing.T) {
-	t.Run("should correctly send the signal message to the writer (if not filtered out)", func(t *testing.T) {
-		action := "Calling a signal type of message to the file stream"
-
+	t.Run("signal message to the writer", func(t *testing.T) {
 		scenarios := []struct {
 			state struct {
 				channels []string
@@ -120,7 +87,7 @@ func Test_FileStream_Signal(t *testing.T) {
 					channels []string
 					level    Level
 				}{
-					channels: []string{"__dummy_channel__"},
+					channels: []string{"dummy_channel"},
 					level:    WARNING,
 				},
 				call: struct {
@@ -130,19 +97,19 @@ func Test_FileStream_Signal(t *testing.T) {
 					message string
 				}{
 					level:   FATAL,
-					channel: "__dummy_channel__",
+					channel: "dummy_channel",
 					fields:  F{},
-					message: "__dummy_message__",
+					message: "dummy_message",
 				},
 				callTimes: 1,
-				expected:  `{"message" : "__dummy_message__"}`,
+				expected:  `{"message" : "dummy_message"}`,
 			},
 			{ // signal through a valid channel with a filtered level
 				state: struct {
 					channels []string
 					level    Level
 				}{
-					channels: []string{"__dummy_channel__"},
+					channels: []string{"dummy_channel"},
 					level:    WARNING,
 				},
 				call: struct {
@@ -152,19 +119,19 @@ func Test_FileStream_Signal(t *testing.T) {
 					message string
 				}{
 					level:   DEBUG,
-					channel: "__dummy_channel__",
+					channel: "dummy_channel",
 					fields:  F{},
-					message: "__dummy_message__",
+					message: "dummy_message",
 				},
 				callTimes: 0,
-				expected:  `{"message" : "__dummy_message__"}`,
+				expected:  `{"message" : "dummy_message"}`,
 			},
 			{ // signal through a valid channel with a unregisted channel
 				state: struct {
 					channels []string
 					level    Level
 				}{
-					channels: []string{"__dummy_channel__"},
+					channels: []string{"dummy_channel"},
 					level:    WARNING,
 				},
 				call: struct {
@@ -174,12 +141,12 @@ func Test_FileStream_Signal(t *testing.T) {
 					message string
 				}{
 					level:   FATAL,
-					channel: "__not_a_valid_dummy_channel__",
+					channel: "not_a_valid_dummy_channel",
 					fields:  F{},
-					message: "__dummy_message__",
+					message: "dummy_message",
 				},
 				callTimes: 0,
-				expected:  `{"message" : "__dummy_message__"}`,
+				expected:  `{"message" : "dummy_message"}`,
 			},
 		}
 
@@ -190,24 +157,20 @@ func Test_FileStream_Signal(t *testing.T) {
 			writer := NewMockWriter(ctrl)
 			writer.EXPECT().Close().Times(1)
 			writer.EXPECT().Write([]byte(scn.expected + "\n")).Times(scn.callTimes)
-
 			formatter := NewMockFormatter(ctrl)
-			formatter.EXPECT().Format(scn.call.level, scn.call.fields, scn.call.message).Return(scn.expected).Times(scn.callTimes)
-
+			formatter.EXPECT().Format(scn.call.level, scn.call.message, scn.call.fields).Return(scn.expected).Times(scn.callTimes)
 			stream, _ := NewFileStream(writer, formatter, scn.state.channels, scn.state.level)
 			defer stream.Close()
 
-			if result := stream.Signal(scn.call.channel, scn.call.level, scn.call.fields, scn.call.message); result != nil {
-				t.Errorf("%s returned unexpected error (%v)", action, result)
+			if err := stream.Signal(scn.call.channel, scn.call.level, scn.call.message, scn.call.fields); err != nil {
+				t.Errorf("returned the (%v) error", err)
 			}
 		}
 	})
 }
 
 func Test_FileStream_Broadcast(t *testing.T) {
-	t.Run("should correctly send the broadcast message to the writer (if not filtered out)", func(t *testing.T) {
-		action := "Calling a broadcast type of message to the file stream"
-
+	t.Run("broadcast message to the writer", func(t *testing.T) {
 		scenarios := []struct {
 			state struct {
 				channels []string
@@ -226,7 +189,7 @@ func Test_FileStream_Broadcast(t *testing.T) {
 					channels []string
 					level    Level
 				}{
-					channels: []string{"__dummy_channel__"},
+					channels: []string{"dummy_channel"},
 					level:    WARNING,
 				},
 				call: struct {
@@ -236,17 +199,17 @@ func Test_FileStream_Broadcast(t *testing.T) {
 				}{
 					level:   FATAL,
 					fields:  F{},
-					message: "__dummy_message__",
+					message: "dummy_message",
 				},
 				callTimes: 1,
-				expected:  `{"message" : "__dummy_message__"}`,
+				expected:  `{"message" : "dummy_message"}`,
 			},
 			{ // broadcast through a valid channel with a filtered level
 				state: struct {
 					channels []string
 					level    Level
 				}{
-					channels: []string{"__dummy_channel__"},
+					channels: []string{"dummy_channel"},
 					level:    WARNING,
 				},
 				call: struct {
@@ -256,10 +219,10 @@ func Test_FileStream_Broadcast(t *testing.T) {
 				}{
 					level:   DEBUG,
 					fields:  F{},
-					message: "__dummy_message__",
+					message: "dummy_message",
 				},
 				callTimes: 0,
-				expected:  `{"message" : "__dummy_message__"}`,
+				expected:  `{"message" : "dummy_message"}`,
 			},
 		}
 
@@ -270,15 +233,13 @@ func Test_FileStream_Broadcast(t *testing.T) {
 			writer := NewMockWriter(ctrl)
 			writer.EXPECT().Close().Times(1)
 			writer.EXPECT().Write([]byte(scn.expected + "\n")).Times(scn.callTimes)
-
 			formatter := NewMockFormatter(ctrl)
-			formatter.EXPECT().Format(scn.call.level, scn.call.fields, scn.call.message).Return(scn.expected).Times(scn.callTimes)
-
+			formatter.EXPECT().Format(scn.call.level, scn.call.message, scn.call.fields).Return(scn.expected).Times(scn.callTimes)
 			stream, _ := NewFileStream(writer, formatter, scn.state.channels, scn.state.level)
 			defer stream.Close()
 
-			if result := stream.Broadcast(scn.call.level, scn.call.fields, scn.call.message); result != nil {
-				t.Errorf("%s returned unexpected error (%v)", action, result)
+			if err := stream.Broadcast(scn.call.level, scn.call.message, scn.call.fields); err != nil {
+				t.Errorf("returned the (%v) error", err)
 			}
 		}
 	})

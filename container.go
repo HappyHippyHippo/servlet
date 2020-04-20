@@ -2,10 +2,6 @@ package servlet
 
 import "fmt"
 
-// Factory is a callback function used to instantiate an object
-// in the container.
-type Factory func(Container) interface{}
-
 // Container object interface defines the methods of a container object used
 // to lazy load and store instances of registered objects.
 type Container interface {
@@ -17,7 +13,8 @@ type Container interface {
 }
 
 // Container is a object used to lazy load and store instances of
-// registered objects.
+// registered objects. This is achieved by the registration of factory functions
+// that will instantiate the instances as needed.
 type container struct {
 	factories map[string]Factory
 	entries   map[string]interface{}
@@ -42,12 +39,14 @@ func (c *container) Close() error {
 }
 
 // Has will check if a object is registed with the requested id.
+// This does not mean that is instantiated. The instantiation is just executed
+// when the instance is requested for the first time.
 func (c container) Has(id string) bool {
 	_, ok := c.factories[id]
 	return ok
 }
 
-// Add will register the requested object defined nby his factory method with
+// Add will register the requested object defined by his factory method with
 // the requested id value.
 // If any object was registed previously with the requested id, then the
 // object will be removed by calling the Remove method previously the storing
@@ -63,8 +62,8 @@ func (c *container) Add(id string, factory Factory) error {
 }
 
 // Remove will eliminate the object from the container.
-// If the object has been already instanciated and implements the Closable
-// interface, then the Close method will be called apon the removing instance.
+// If the object has been already instantiated and implements the Closable
+// interface, then the Close method will be called on the removing instance.
 func (c *container) Remove(id string) {
 	if entry, ok := c.entries[id]; ok {
 		switch entry.(type) {
@@ -77,8 +76,8 @@ func (c *container) Remove(id string) {
 }
 
 // Get will retrieve the requested object from the container.
-// If the object has not yet been instanciated, then the factory method will be
-// executed to instanciate it.
+// If the object has not yet been instantiated, then the factory method will be
+// executed to instantiate it.
 func (c *container) Get(id string) interface{} {
 	if entry, ok := c.entries[id]; ok {
 		return entry

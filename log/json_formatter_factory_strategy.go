@@ -8,9 +8,9 @@ const (
 
 type jsonFormatterFactoryStrategy struct{}
 
-// NewJSONFormatterFactoryStrategy instantiate a new yaml decoder factory
-// strategy that will enable the decoder factory to instantiate a new yaml
-// decoder.
+// NewJSONFormatterFactoryStrategy instantiate a new json logging output
+// formatter factory strategy that will enable the formatter factory to
+// instantiate a new content to json formatter.
 func NewJSONFormatterFactoryStrategy() FormatterFactoryStrategy {
 	return &jsonFormatterFactoryStrategy{}
 }

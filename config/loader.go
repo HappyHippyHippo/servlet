@@ -3,6 +3,10 @@ package config
 import "fmt"
 
 // Loader interface used to define the methods of a configuration loader.
+// This loader will reads a configuration partial with the 'config.sources'
+// path and creates the configuration sources described in the entries by the
+// usage of the source factory. After the creation of the sources instances,
+// they will be added to a config managing instance.
 type Loader interface {
 	Load(id string, path string, format string) error
 }
@@ -27,7 +31,8 @@ func NewLoader(config Config, sourceFactory SourceFactory) (Loader, error) {
 	}, nil
 }
 
-// Load loads the configuration from a base config file.
+// Load loads the configuration from a base config file defined by a
+// path and format.
 func (l loader) Load(id string, path string, format string) (err error) {
 	defer func() {
 		if r := recover(); r != nil {

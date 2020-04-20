@@ -7,7 +7,7 @@ import (
 )
 
 const (
-	// SourceTypeFile defines the value to be used to declare a file
+	// SourceTypeFile defines the value to be used to declare a simple file
 	// config source type.
 	SourceTypeFile = "file"
 )
@@ -17,9 +17,9 @@ type fileSourceFactoryStrategy struct {
 	decoderFactory DecoderFactory
 }
 
-// NewFileSourceFactoryStrategy instantiate a new yaml decoder factory
-// strategy that will enable the decoder factory to instantiate a new yaml
-// decoder.
+// NewFileSourceFactoryStrategy instantiate a new file source factory
+// strategy that will enable the source factory to instantiate a new
+// file configuration source.
 func NewFileSourceFactoryStrategy(fileSystem afero.Fs, decoderFactory DecoderFactory) (SourceFactoryStrategy, error) {
 	if fileSystem == nil {
 		return nil, fmt.Errorf("Invalid nil 'fileSystem' argument")
@@ -35,7 +35,8 @@ func NewFileSourceFactoryStrategy(fileSystem afero.Fs, decoderFactory DecoderFac
 }
 
 // Accept will check if the source factory strategy can instantiate a
-// decoder of the requested format.
+// new source of the requested type. Also, validates that there is the path
+// and content format extra parameters, and thar this parameters are strings.
 func (fileSourceFactoryStrategy) Accept(stype string, args ...interface{}) bool {
 	if stype != SourceTypeFile || len(args) < 2 {
 		return false
@@ -57,7 +58,7 @@ func (fileSourceFactoryStrategy) Accept(stype string, args ...interface{}) bool 
 }
 
 // AcceptConfig will check if the source factory strategy can instantiate a
-// decoder where the data to check comes from a configuration instance.
+// source where the data to check comes from a configuration partial instance.
 func (s fileSourceFactoryStrategy) AcceptConfig(conf Partial) (check bool) {
 	defer func() {
 		if r := recover(); r != nil {
@@ -72,7 +73,7 @@ func (s fileSourceFactoryStrategy) AcceptConfig(conf Partial) (check bool) {
 	return s.Accept(stype, path, format)
 }
 
-// Create will instantiate the desired source instance.
+// Create will instantiate the desired file source instance.
 func (s fileSourceFactoryStrategy) Create(args ...interface{}) (Source, error) {
 	path := args[0].(string)
 	format := args[1].(string)
@@ -80,8 +81,8 @@ func (s fileSourceFactoryStrategy) Create(args ...interface{}) (Source, error) {
 	return NewFileSource(path, format, s.fileSystem, s.decoderFactory)
 }
 
-// CreateConfig will instantiate the desired source instance where the
-// initialization data comes from a configuration instance.
+// CreateConfig will instantiate the desired file source instance where the
+// initialization data comes from a configuration partial instance.
 func (s fileSourceFactoryStrategy) CreateConfig(conf Partial) (Source, error) {
 	path := conf.String("path")
 	format := conf.String("format")

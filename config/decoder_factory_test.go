@@ -9,113 +9,78 @@ import (
 
 func Test_NewDecoderFactory(t *testing.T) {
 	t.Run("create a new config decoder factory", func(t *testing.T) {
-		action := "Creating a new config decoder factory"
-
-		factory := NewDecoderFactory()
-
-		if factory == nil {
-			t.Errorf("%s didn't return a valid reference to a new config decoder factory", action)
+		if factory := NewDecoderFactory(); factory == nil {
+			t.Errorf("didn't return a valid reference")
 		}
 	})
 }
 
 func Test_DecoderFactory_Register(t *testing.T) {
-	t.Run("should return a error if passing a nil strategy", func(t *testing.T) {
-		action := "Registering a nil strategy"
+	factory := NewDecoderFactory()
 
-		expected := "Invalid nil 'strategy' argument"
-
-		ctrl := gomock.NewController(t)
-		defer ctrl.Finish()
-
-		factory := NewDecoderFactory()
-
-		err := factory.Register(nil)
-		if err == nil {
-			t.Errorf("%s didn't return the expected error", action)
-		} else {
-			if check := err.Error(); check != expected {
-				t.Errorf("%s return the error (%s) when expecting (%s)", action, check, expected)
-			}
+	t.Run("error if passing a nil strategy", func(t *testing.T) {
+		if err := factory.Register(nil); err == nil {
+			t.Errorf("didn't returned the expected error")
+		} else if err.Error() != "Invalid nil 'strategy' argument" {
+			t.Errorf("returned the (%v) error", err)
 		}
 	})
 
-	t.Run("should correctly register the decoder factory strategy", func(t *testing.T) {
-		action := "Registering a decoder factory strategy"
-
+	t.Run("register the decoder factory strategy", func(t *testing.T) {
 		ctrl := gomock.NewController(t)
 		defer ctrl.Finish()
 
 		strategy := NewMockDecoderFactoryStrategy(ctrl)
 
-		factory := NewDecoderFactory()
-
-		err := factory.Register(strategy)
-		if err != nil {
-			t.Errorf("%s return a unexpected error : %s", action, err.Error())
-		}
-
-		if factory.(*decoderFactory).strategies[0] != strategy {
-			t.Errorf("%s didn't stored the strategy in the factory", action)
+		if err := factory.Register(strategy); err != nil {
+			t.Errorf("returned the (%v) error", err)
+		} else if factory.(*decoderFactory).strategies[0] != strategy {
+			t.Errorf("didn't stored the strategy")
 		}
 	})
 }
 
 func Test_DecoderFactory_Create(t *testing.T) {
-	t.Run("should return a error signaling that the format is unrecognized", func(t *testing.T) {
-		action := "Creating a invalid format decoder"
+	format := "format"
+	expectedError := "Unrecognized format type : format"
 
-		format := "__format__"
-		expected := "Unrecognized format type : __format__"
-
+	t.Run("error if the format is unrecognized", func(t *testing.T) {
 		ctrl := gomock.NewController(t)
 		defer ctrl.Finish()
+
+		factory := NewDecoderFactory()
 
 		reader := NewMockReader(ctrl, "{}")
 		strategy := NewMockDecoderFactoryStrategy(ctrl)
 		strategy.EXPECT().Accept(format, reader).Return(false).Times(1)
-
-		factory := NewDecoderFactory()
 		factory.Register(strategy)
 
-		decoder, err := factory.Create(format, reader)
-		if err == nil {
-			t.Errorf("%s didn't return the expected error", action)
-		} else {
-			if check := err.Error(); check != expected {
-				t.Errorf("%s returned the error (%s) when expected (%s)", action, check, expected)
-			}
-		}
-		if decoder != nil {
-			t.Errorf("%s returned an unexpected yaml config decoder reference", action)
+		if result, err := factory.Create(format, reader); result != nil {
+			t.Errorf("returned a valid reference")
+		} else if err == nil {
+			t.Errorf("didn't return the expected error")
+		} else if err.Error() != expectedError {
+			t.Errorf("returned the (%v) error", err)
 		}
 	})
 
 	t.Run("should create the requested yaml config decoder", func(t *testing.T) {
-		action := "Creating a new yaml decoder"
-
-		format := "__format__"
-
 		ctrl := gomock.NewController(t)
 		defer ctrl.Finish()
 
+		factory := NewDecoderFactory()
+
 		reader := NewMockReader(ctrl, "{}")
 		decoder := NewMockDecoder(ctrl)
-
 		strategy := NewMockDecoderFactoryStrategy(ctrl)
 		strategy.EXPECT().Accept(format, reader).Return(true).Times(1)
 		strategy.EXPECT().Create(reader).Return(decoder, nil).Times(1)
-
-		factory := NewDecoderFactory()
 		factory.Register(strategy)
 
-		check, err := factory.Create(format, reader)
-		if err != nil {
-			t.Errorf("%s return the unexpected error : %v", action, err)
-		}
-
-		if !reflect.DeepEqual(check, decoder) {
-			t.Errorf("%s didn't returned the created strategy", action)
+		if check, err := factory.Create(format, reader); err != nil {
+			t.Errorf("returned the (%v) error", err)
+		} else if !reflect.DeepEqual(check, decoder) {
+			t.Errorf("didn't returned the created strategy")
 		}
 	})
 }

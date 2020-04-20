@@ -7,99 +7,99 @@ import (
 )
 
 func Test_BaseController_Options(t *testing.T) {
-	t.Run("should return 405", func(t *testing.T) {
-		controller := controller{}
+	controller := controller{}
 
-		ctrl := gomock.NewController(t)
-		defer ctrl.Finish()
+	ctrl := gomock.NewController(t)
+	defer ctrl.Finish()
 
-		context := NewMockContext(ctrl)
-		context.EXPECT().String(405, "").Times(1)
+	context := NewMockContext(ctrl)
+	context.EXPECT().String(405, "").Times(1)
 
+	t.Run("return 405", func(t *testing.T) {
 		controller.Options(context)
 	})
 }
 
 func Test_BaseController_Head(t *testing.T) {
-	t.Run("should return 405", func(t *testing.T) {
-		controller := controller{}
+	controller := controller{}
 
-		ctrl := gomock.NewController(t)
-		defer ctrl.Finish()
+	ctrl := gomock.NewController(t)
+	defer ctrl.Finish()
 
-		context := NewMockContext(ctrl)
-		context.EXPECT().String(405, "").Times(1)
+	context := NewMockContext(ctrl)
+	context.EXPECT().String(405, "").Times(1)
 
+	t.Run("return 405", func(t *testing.T) {
 		controller.Head(context)
 	})
 }
 
 func Test_BaseController_Get(t *testing.T) {
-	t.Run("should return 405", func(t *testing.T) {
-		controller := controller{}
+	controller := controller{}
 
-		ctrl := gomock.NewController(t)
-		defer ctrl.Finish()
+	ctrl := gomock.NewController(t)
+	defer ctrl.Finish()
 
-		context := NewMockContext(ctrl)
-		context.EXPECT().String(405, "").Times(1)
+	context := NewMockContext(ctrl)
+	context.EXPECT().String(405, "").Times(1)
 
+	t.Run("return 405", func(t *testing.T) {
 		controller.Get(context)
 	})
 }
 
 func Test_BaseController_Post(t *testing.T) {
-	t.Run("should return 405", func(t *testing.T) {
-		controller := controller{}
+	controller := controller{}
 
-		ctrl := gomock.NewController(t)
-		defer ctrl.Finish()
+	ctrl := gomock.NewController(t)
+	defer ctrl.Finish()
 
-		context := NewMockContext(ctrl)
-		context.EXPECT().String(405, "").Times(1)
+	context := NewMockContext(ctrl)
+	context.EXPECT().String(405, "").Times(1)
 
+	t.Run("return 405", func(t *testing.T) {
 		controller.Post(context)
 	})
 }
 
 func Test_BaseController_Put(t *testing.T) {
-	t.Run("should return 405", func(t *testing.T) {
-		controller := controller{}
+	controller := controller{}
 
-		ctrl := gomock.NewController(t)
-		defer ctrl.Finish()
+	ctrl := gomock.NewController(t)
+	defer ctrl.Finish()
 
-		context := NewMockContext(ctrl)
-		context.EXPECT().String(405, "").Times(1)
+	context := NewMockContext(ctrl)
+	context.EXPECT().String(405, "").Times(1)
 
+	t.Run("return 405", func(t *testing.T) {
 		controller.Put(context)
 	})
 }
 
 func Test_BaseController_Patch(t *testing.T) {
-	t.Run("should return 405", func(t *testing.T) {
-		controller := controller{}
+	controller := controller{}
 
-		ctrl := gomock.NewController(t)
-		defer ctrl.Finish()
+	ctrl := gomock.NewController(t)
+	defer ctrl.Finish()
 
-		context := NewMockContext(ctrl)
-		context.EXPECT().String(405, "").Times(1)
+	context := NewMockContext(ctrl)
+	context.EXPECT().String(405, "").Times(1)
 
+	t.Run("return 405", func(t *testing.T) {
 		controller.Patch(context)
 	})
 }
 
 func Test_BaseController_Delete(t *testing.T) {
-	t.Run("should return 405", func(t *testing.T) {
-		controller := controller{}
+	controller := controller{}
 
-		ctrl := gomock.NewController(t)
-		defer ctrl.Finish()
+	ctrl := gomock.NewController(t)
+	defer ctrl.Finish()
 
-		context := NewMockContext(ctrl)
-		context.EXPECT().String(405, "").Times(1)
+	context := NewMockContext(ctrl)
+	context.EXPECT().String(405, "").Times(1)
 
+	t.Run("return 405", func(t *testing.T) {
 		controller.Delete(context)
 	})
 }
