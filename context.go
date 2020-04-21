@@ -3,6 +3,7 @@ package servlet
 import (
 	"io"
 	"mime/multipart"
+	"net/http"
 	"time"
 
 	"github.com/gin-gonic/gin"
@@ -80,7 +81,7 @@ type Context interface {
 	Header(key, value string)
 	GetHeader(key string) string
 	GetRawData() ([]byte, error)
-	SetCookie(name, value string, maxAge int, path, domain string, secure, httpOnly bool)
+	SetCookie(name, value string, maxAge int, path, domain string, sameSite http.SameSite, secure, httpOnly bool)
 	Cookie(name string) (string, error)
 	Render(code int, r render.Render)
 	HTML(code int, name string, obj interface{})

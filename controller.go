@@ -1,8 +1,8 @@
 package servlet
 
-// Controller interface defines the interaction methods of a
+// ControllerInterface interface defines the interaction methods of a
 // application controller used to process an inbound HTTP connection request.
-type Controller interface {
+type ControllerInterface interface {
 	Options(context Context)
 	Head(context Context)
 	Get(context Context)
@@ -12,39 +12,41 @@ type Controller interface {
 	Delete(context Context)
 }
 
-type controller struct{}
+// Controller type defines the base structure to be used to implement a
+// HTTP request handler
+type Controller struct{}
 
 // Options method would be called on a OPTIONS HTTP verb request.
-func (c controller) Options(context Context) {
+func (c Controller) Options(context Context) {
 	context.String(405, "")
 }
 
 // Head method would be called on a HEAD HTTP verb request.
-func (c controller) Head(context Context) {
+func (c Controller) Head(context Context) {
 	context.String(405, "")
 }
 
 // Get method would be called on a GET HTTP verb request.
-func (c controller) Get(context Context) {
+func (c Controller) Get(context Context) {
 	context.String(405, "")
 }
 
 // Post method would be called on a POST HTTP verb request.
-func (c controller) Post(context Context) {
+func (c Controller) Post(context Context) {
 	context.String(405, "")
 }
 
 // Put method would be called on a PUT HTTP verb request.
-func (c controller) Put(context Context) {
+func (c Controller) Put(context Context) {
 	context.String(405, "")
 }
 
 // Patch method would be called on a PATCH HTTP verb request.
-func (c controller) Patch(context Context) {
+func (c Controller) Patch(context Context) {
 	context.String(405, "")
 }
 
 // Delete method would be called on a DELETE HTTP verb request.
-func (c controller) Delete(context Context) {
+func (c Controller) Delete(context Context) {
 	context.String(405, "")
 }

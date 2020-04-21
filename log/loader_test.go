@@ -112,7 +112,7 @@ func Test_Loader_Load(t *testing.T) {
 
 		if err := loader.Load(conf); err == nil {
 			t.Errorf("didn't return the expected error")
-		} else if strings.Index(err.Error(), "Error while parsing the logger stream entry : ") != 0 {
+		} else if err.Error() != "Error while parsing the list of streams" {
 			t.Errorf("returned the (%s) error", err)
 		}
 	})
