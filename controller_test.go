@@ -7,7 +7,7 @@ import (
 )
 
 func Test_BaseController_Options(t *testing.T) {
-	controller := controller{}
+	controller := Controller{}
 
 	ctrl := gomock.NewController(t)
 	defer ctrl.Finish()
@@ -21,7 +21,7 @@ func Test_BaseController_Options(t *testing.T) {
 }
 
 func Test_BaseController_Head(t *testing.T) {
-	controller := controller{}
+	controller := Controller{}
 
 	ctrl := gomock.NewController(t)
 	defer ctrl.Finish()
@@ -35,7 +35,7 @@ func Test_BaseController_Head(t *testing.T) {
 }
 
 func Test_BaseController_Get(t *testing.T) {
-	controller := controller{}
+	controller := Controller{}
 
 	ctrl := gomock.NewController(t)
 	defer ctrl.Finish()
@@ -49,7 +49,7 @@ func Test_BaseController_Get(t *testing.T) {
 }
 
 func Test_BaseController_Post(t *testing.T) {
-	controller := controller{}
+	controller := Controller{}
 
 	ctrl := gomock.NewController(t)
 	defer ctrl.Finish()
@@ -63,7 +63,7 @@ func Test_BaseController_Post(t *testing.T) {
 }
 
 func Test_BaseController_Put(t *testing.T) {
-	controller := controller{}
+	controller := Controller{}
 
 	ctrl := gomock.NewController(t)
 	defer ctrl.Finish()
@@ -77,7 +77,7 @@ func Test_BaseController_Put(t *testing.T) {
 }
 
 func Test_BaseController_Patch(t *testing.T) {
-	controller := controller{}
+	controller := Controller{}
 
 	ctrl := gomock.NewController(t)
 	defer ctrl.Finish()
@@ -91,7 +91,7 @@ func Test_BaseController_Patch(t *testing.T) {
 }
 
 func Test_BaseController_Delete(t *testing.T) {
-	controller := controller{}
+	controller := Controller{}
 
 	ctrl := gomock.NewController(t)
 	defer ctrl.Finish()
