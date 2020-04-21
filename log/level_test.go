@@ -31,6 +31,12 @@ func Test_Level(t *testing.T) {
 			{
 				lower:      NOTICE,
 				lowerName:  "NOTICE",
+				higher:     INFO,
+				higherName: "INFO",
+			},
+			{
+				lower:      INFO,
+				lowerName:  "INFO",
 				higher:     DEBUG,
 				higherName: "DEBUG",
 			},
@@ -70,6 +76,11 @@ func Test_LevelMap(t *testing.T) {
 				name:      "notice",
 				level:     NOTICE,
 				levelName: "NOTICE",
+			},
+			{
+				name:      "info",
+				level:     INFO,
+				levelName: "INFO",
 			},
 			{
 				name:      "debug",

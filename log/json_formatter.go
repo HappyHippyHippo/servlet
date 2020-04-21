@@ -6,11 +6,12 @@ import (
 )
 
 var levelNameMap = map[Level]string{
-	FATAL:   "fatal",
-	ERROR:   "error",
-	WARNING: "warning",
-	NOTICE:  "notice",
-	DEBUG:   "debug",
+	FATAL:   "FATAL",
+	ERROR:   "ERROR",
+	WARNING: "WARNING",
+	NOTICE:  "NOTICE",
+	INFO:    "INFO",
+	DEBUG:   "DEBUG",
 }
 
 type jsonFormatter struct{}
@@ -28,7 +29,7 @@ func (f jsonFormatter) Format(level Level, message string, fields F) string {
 		fields = F{}
 	}
 
-	fields["time"] = time.Now().Format("2006-01-02T15:04:05-0700")
+	fields["time"] = time.Now().Format("2006-01-02T15:04:05.000-0700")
 	fields["level"] = levelNameMap[level]
 	fields["message"] = message
 
