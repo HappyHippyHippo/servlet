@@ -11,6 +11,7 @@ import (
 	gomock "github.com/golang/mock/gomock"
 	io "io"
 	multipart "mime/multipart"
+	http "net/http"
 	reflect "reflect"
 	time "time"
 )
@@ -987,15 +988,15 @@ func (mr *MockContextMockRecorder) GetRawData() *gomock.Call {
 }
 
 // SetCookie mocks base method
-func (m *MockContext) SetCookie(name, value string, maxAge int, path, domain string, secure, httpOnly bool) {
+func (m *MockContext) SetCookie(name, value string, maxAge int, path, domain string, sameSite http.SameSite, secure, httpOnly bool) {
 	m.ctrl.T.Helper()
-	m.ctrl.Call(m, "SetCookie", name, value, maxAge, path, domain, secure, httpOnly)
+	m.ctrl.Call(m, "SetCookie", name, value, maxAge, path, domain, sameSite, secure, httpOnly)
 }
 
 // SetCookie indicates an expected call of SetCookie
-func (mr *MockContextMockRecorder) SetCookie(name, value, maxAge, path, domain, secure, httpOnly interface{}) *gomock.Call {
+func (mr *MockContextMockRecorder) SetCookie(name, value, maxAge, path, domain, sameSite, secure, httpOnly interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "SetCookie", reflect.TypeOf((*MockContext)(nil).SetCookie), name, value, maxAge, path, domain, secure, httpOnly)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "SetCookie", reflect.TypeOf((*MockContext)(nil).SetCookie), name, value, maxAge, path, domain, sameSite, secure, httpOnly)
 }
 
 // Cookie mocks base method
