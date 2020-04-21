@@ -8,6 +8,7 @@ import (
 	gin "github.com/gin-gonic/gin"
 	gomock "github.com/golang/mock/gomock"
 	template "html/template"
+	net "net"
 	http "net/http"
 	reflect "reflect"
 )
@@ -280,30 +281,16 @@ func (mr *MockEngineMockRecorder) Delims(left, right interface{}) *gomock.Call {
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Delims", reflect.TypeOf((*MockEngine)(nil).Delims), left, right)
 }
 
-// SecureJsonPrefix mocks base method
-func (m *MockEngine) SecureJsonPrefix(prefix string) *gin.Engine {
+// HandleContext mocks base method
+func (m *MockEngine) HandleContext(c *gin.Context) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "SecureJsonPrefix", prefix)
-	ret0, _ := ret[0].(*gin.Engine)
-	return ret0
+	m.ctrl.Call(m, "HandleContext", c)
 }
 
-// SecureJsonPrefix indicates an expected call of SecureJsonPrefix
-func (mr *MockEngineMockRecorder) SecureJsonPrefix(prefix interface{}) *gomock.Call {
+// HandleContext indicates an expected call of HandleContext
+func (mr *MockEngineMockRecorder) HandleContext(c interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "SecureJsonPrefix", reflect.TypeOf((*MockEngine)(nil).SecureJsonPrefix), prefix)
-}
-
-// LoadHTMLGlob mocks base method
-func (m *MockEngine) LoadHTMLGlob(pattern string) {
-	m.ctrl.T.Helper()
-	m.ctrl.Call(m, "LoadHTMLGlob", pattern)
-}
-
-// LoadHTMLGlob indicates an expected call of LoadHTMLGlob
-func (mr *MockEngineMockRecorder) LoadHTMLGlob(pattern interface{}) *gomock.Call {
-	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "LoadHTMLGlob", reflect.TypeOf((*MockEngine)(nil).LoadHTMLGlob), pattern)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "HandleContext", reflect.TypeOf((*MockEngine)(nil).HandleContext), c)
 }
 
 // LoadHTMLFiles mocks base method
@@ -322,44 +309,16 @@ func (mr *MockEngineMockRecorder) LoadHTMLFiles(files ...interface{}) *gomock.Ca
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "LoadHTMLFiles", reflect.TypeOf((*MockEngine)(nil).LoadHTMLFiles), files...)
 }
 
-// SetHTMLTemplate mocks base method
-func (m *MockEngine) SetHTMLTemplate(templ *template.Template) {
+// LoadHTMLGlob mocks base method
+func (m *MockEngine) LoadHTMLGlob(pattern string) {
 	m.ctrl.T.Helper()
-	m.ctrl.Call(m, "SetHTMLTemplate", templ)
+	m.ctrl.Call(m, "LoadHTMLGlob", pattern)
 }
 
-// SetHTMLTemplate indicates an expected call of SetHTMLTemplate
-func (mr *MockEngineMockRecorder) SetHTMLTemplate(templ interface{}) *gomock.Call {
+// LoadHTMLGlob indicates an expected call of LoadHTMLGlob
+func (mr *MockEngineMockRecorder) LoadHTMLGlob(pattern interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "SetHTMLTemplate", reflect.TypeOf((*MockEngine)(nil).SetHTMLTemplate), templ)
-}
-
-// SetFuncMap mocks base method
-func (m *MockEngine) SetFuncMap(funcMap template.FuncMap) {
-	m.ctrl.T.Helper()
-	m.ctrl.Call(m, "SetFuncMap", funcMap)
-}
-
-// SetFuncMap indicates an expected call of SetFuncMap
-func (mr *MockEngineMockRecorder) SetFuncMap(funcMap interface{}) *gomock.Call {
-	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "SetFuncMap", reflect.TypeOf((*MockEngine)(nil).SetFuncMap), funcMap)
-}
-
-// NoRoute mocks base method
-func (m *MockEngine) NoRoute(handlers ...gin.HandlerFunc) {
-	m.ctrl.T.Helper()
-	varargs := []interface{}{}
-	for _, a := range handlers {
-		varargs = append(varargs, a)
-	}
-	m.ctrl.Call(m, "NoRoute", varargs...)
-}
-
-// NoRoute indicates an expected call of NoRoute
-func (mr *MockEngineMockRecorder) NoRoute(handlers ...interface{}) *gomock.Call {
-	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "NoRoute", reflect.TypeOf((*MockEngine)(nil).NoRoute), handlers...)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "LoadHTMLGlob", reflect.TypeOf((*MockEngine)(nil).LoadHTMLGlob), pattern)
 }
 
 // NoMethod mocks base method
@@ -376,6 +335,22 @@ func (m *MockEngine) NoMethod(handlers ...gin.HandlerFunc) {
 func (mr *MockEngineMockRecorder) NoMethod(handlers ...interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "NoMethod", reflect.TypeOf((*MockEngine)(nil).NoMethod), handlers...)
+}
+
+// NoRoute mocks base method
+func (m *MockEngine) NoRoute(handlers ...gin.HandlerFunc) {
+	m.ctrl.T.Helper()
+	varargs := []interface{}{}
+	for _, a := range handlers {
+		varargs = append(varargs, a)
+	}
+	m.ctrl.Call(m, "NoRoute", varargs...)
+}
+
+// NoRoute indicates an expected call of NoRoute
+func (mr *MockEngineMockRecorder) NoRoute(handlers ...interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "NoRoute", reflect.TypeOf((*MockEngine)(nil).NoRoute), handlers...)
 }
 
 // Routes mocks base method
@@ -410,6 +385,34 @@ func (mr *MockEngineMockRecorder) Run(addr ...interface{}) *gomock.Call {
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Run", reflect.TypeOf((*MockEngine)(nil).Run), addr...)
 }
 
+// RunFd mocks base method
+func (m *MockEngine) RunFd(fd int) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "RunFd", fd)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// RunFd indicates an expected call of RunFd
+func (mr *MockEngineMockRecorder) RunFd(fd interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "RunFd", reflect.TypeOf((*MockEngine)(nil).RunFd), fd)
+}
+
+// RunListener mocks base method
+func (m *MockEngine) RunListener(listener net.Listener) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "RunListener", listener)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// RunListener indicates an expected call of RunListener
+func (mr *MockEngineMockRecorder) RunListener(listener interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "RunListener", reflect.TypeOf((*MockEngine)(nil).RunListener), listener)
+}
+
 // RunTLS mocks base method
 func (m *MockEngine) RunTLS(addr, certFile, keyFile string) error {
 	m.ctrl.T.Helper()
@@ -438,18 +441,18 @@ func (mr *MockEngineMockRecorder) RunUnix(file interface{}) *gomock.Call {
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "RunUnix", reflect.TypeOf((*MockEngine)(nil).RunUnix), file)
 }
 
-// RunFd mocks base method
-func (m *MockEngine) RunFd(fd int) error {
+// SecureJsonPrefix mocks base method
+func (m *MockEngine) SecureJsonPrefix(prefix string) *gin.Engine {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "RunFd", fd)
-	ret0, _ := ret[0].(error)
+	ret := m.ctrl.Call(m, "SecureJsonPrefix", prefix)
+	ret0, _ := ret[0].(*gin.Engine)
 	return ret0
 }
 
-// RunFd indicates an expected call of RunFd
-func (mr *MockEngineMockRecorder) RunFd(fd interface{}) *gomock.Call {
+// SecureJsonPrefix indicates an expected call of SecureJsonPrefix
+func (mr *MockEngineMockRecorder) SecureJsonPrefix(prefix interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "RunFd", reflect.TypeOf((*MockEngine)(nil).RunFd), fd)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "SecureJsonPrefix", reflect.TypeOf((*MockEngine)(nil).SecureJsonPrefix), prefix)
 }
 
 // ServeHTTP mocks base method
@@ -464,14 +467,26 @@ func (mr *MockEngineMockRecorder) ServeHTTP(w, req interface{}) *gomock.Call {
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ServeHTTP", reflect.TypeOf((*MockEngine)(nil).ServeHTTP), w, req)
 }
 
-// HandleContext mocks base method
-func (m *MockEngine) HandleContext(c *gin.Context) {
+// SetFuncMap mocks base method
+func (m *MockEngine) SetFuncMap(funcMap template.FuncMap) {
 	m.ctrl.T.Helper()
-	m.ctrl.Call(m, "HandleContext", c)
+	m.ctrl.Call(m, "SetFuncMap", funcMap)
 }
 
-// HandleContext indicates an expected call of HandleContext
-func (mr *MockEngineMockRecorder) HandleContext(c interface{}) *gomock.Call {
+// SetFuncMap indicates an expected call of SetFuncMap
+func (mr *MockEngineMockRecorder) SetFuncMap(funcMap interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "HandleContext", reflect.TypeOf((*MockEngine)(nil).HandleContext), c)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "SetFuncMap", reflect.TypeOf((*MockEngine)(nil).SetFuncMap), funcMap)
+}
+
+// SetHTMLTemplate mocks base method
+func (m *MockEngine) SetHTMLTemplate(templ *template.Template) {
+	m.ctrl.T.Helper()
+	m.ctrl.Call(m, "SetHTMLTemplate", templ)
+}
+
+// SetHTMLTemplate indicates an expected call of SetHTMLTemplate
+func (mr *MockEngineMockRecorder) SetHTMLTemplate(templ interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "SetHTMLTemplate", reflect.TypeOf((*MockEngine)(nil).SetHTMLTemplate), templ)
 }
