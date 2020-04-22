@@ -37,8 +37,8 @@ const (
 
 // LogMiddlewareParameters @type
 type LogMiddlewareParameters struct {
-	ReqReader          LogRequestReader
-	ResReader          LogResponseReader
+	RequestReader      LogRequestReader
+	ResponseReader     LogResponseReader
 	Next               gin.HandlerFunc
 	Logger             log.Logger
 	LogChannel         string
@@ -75,8 +75,8 @@ func NewLogMiddlewareParameters(next gin.HandlerFunc, logger log.Logger) LogMidd
 	}
 
 	return LogMiddlewareParameters{
-		ReqReader:          NewLogRequestReader(),
-		ResReader:          NewLogResponseReader(),
+		RequestReader:      NewLogRequestReader(),
+		ResponseReader:     NewLogResponseReader(),
 		Next:               next,
 		Logger:             logger,
 		LogChannel:         logChannel,

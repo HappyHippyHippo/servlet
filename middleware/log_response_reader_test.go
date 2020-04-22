@@ -48,15 +48,9 @@ func Test_LogResponseReader_Get(t *testing.T) {
 		}
 	})
 
-	t.Run("retrieve the response raw body", func(t *testing.T) {
-		if value := data["body"].(map[string]interface{})["raw"]; !reflect.DeepEqual(value, string(rawBody)) {
-			t.Errorf("stored the (%v) raw body", value)
-		}
-	})
-
-	t.Run("retrieve the response json body", func(t *testing.T) {
-		if value := data["body"].(map[string]interface{})["json"]; !reflect.DeepEqual(value, jsonBody) {
-			t.Errorf("stored the (%v) json body", value)
+	t.Run("retrieve the response body", func(t *testing.T) {
+		if value := data["body"]; !reflect.DeepEqual(value, string(rawBody)) {
+			t.Errorf("stored the (%v) body", value)
 		}
 	})
 }

@@ -22,11 +22,11 @@ func (m logMiddleware) Execute(context servlet.Context) {
 	gcontext := context.(*gin.Context)
 	gcontext.Writer, _ = NewLogResponseWriter(gcontext.Writer)
 
-	request := m.params.ReqReader.Get(context)
+	request := m.params.RequestReader.Get(context)
 	m.params.Logger.Signal(m.params.LogChannel, m.params.LogLevel, m.params.LogRequestMessage, log.F{"request": request})
 
 	m.params.Next(gcontext)
 
-	response := m.params.ResReader.Get(context)
+	response := m.params.ResponseReader.Get(context)
 	m.params.Logger.Signal(m.params.LogChannel, m.params.LogLevel, m.params.LogResponseMessage, log.F{"request": request, "response": response})
 }

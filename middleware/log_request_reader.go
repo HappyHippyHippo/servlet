@@ -2,7 +2,6 @@ package middleware
 
 import (
 	"bytes"
-	"encoding/json"
 	"io/ioutil"
 	"net/http"
 	"time"
@@ -27,15 +26,11 @@ func NewLogRequestReader() LogRequestReader {
 func (r logRequestReader) Get(context servlet.Context) map[string]interface{} {
 	request := context.(*gin.Context).Request
 
-	var bytesBody []byte = r.body(request)
-	var jsonBody interface{}
-	json.Unmarshal(bytesBody, &jsonBody)
-
 	return map[string]interface{}{
 		"headers": r.headers(request),
 		"method":  request.Method,
 		"uri":     request.URL.RequestURI(),
-		"body":    map[string]interface{}{"raw": string(bytesBody), "json": jsonBody},
+		"body":    r.body(request),
 		"time":    time.Now().Format("2006-01-02T15:04:05.000-0700"),
 	}
 }
@@ -48,11 +43,11 @@ func (logRequestReader) headers(request *http.Request) map[string][]string {
 	return headers
 }
 
-func (logRequestReader) body(request *http.Request) []byte {
+func (logRequestReader) body(request *http.Request) string {
 	var bodyBytes []byte
 	if request.Body != nil {
 		bodyBytes, _ = ioutil.ReadAll(request.Body)
 	}
 	request.Body = ioutil.NopCloser(bytes.NewBuffer(bodyBytes))
-	return bodyBytes
+	return string(bodyBytes)
 }

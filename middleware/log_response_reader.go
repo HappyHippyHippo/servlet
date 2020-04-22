@@ -1,7 +1,6 @@
 package middleware
 
 import (
-	"encoding/json"
 	"time"
 
 	"github.com/gin-gonic/gin"
@@ -24,14 +23,10 @@ func NewLogResponseReader() LogResponseReader {
 func (r logResposeReader) Get(context servlet.Context) map[string]interface{} {
 	response := context.(*gin.Context).Writer.(LogResponseWriter)
 
-	var bytesBody []byte = response.Body()
-	var jsonBody interface{}
-	json.Unmarshal(bytesBody, &jsonBody)
-
 	return map[string]interface{}{
 		"status":  response.Status(),
 		"headers": r.headers(response),
-		"body":    map[string]interface{}{"raw": string(bytesBody), "json": jsonBody},
+		"body":    string(response.Body()),
 		"time":    time.Now().Format("2006-01-02T15:04:05.000-0700"),
 	}
 }
