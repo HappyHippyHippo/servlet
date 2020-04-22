@@ -53,45 +53,78 @@ func Test_Level(t *testing.T) {
 func Test_LevelMap(t *testing.T) {
 	t.Run("level map have correct priorities", func(t *testing.T) {
 		scenarios := []struct {
-			name      string
-			level     Level
-			levelName string
+			name  string
+			level Level
 		}{
 			{
-				name:      "fatal",
-				level:     FATAL,
-				levelName: "FATAL",
+				name:  "fatal",
+				level: FATAL,
 			},
 			{
-				name:      "error",
-				level:     ERROR,
-				levelName: "ERROR",
+				name:  "error",
+				level: ERROR,
 			},
 			{
-				name:      "warning",
-				level:     WARNING,
-				levelName: "WARNING",
+				name:  "warning",
+				level: WARNING,
 			},
 			{
-				name:      "notice",
-				level:     NOTICE,
-				levelName: "NOTICE",
+				name:  "notice",
+				level: NOTICE,
 			},
 			{
-				name:      "info",
-				level:     INFO,
-				levelName: "INFO",
+				name:  "info",
+				level: INFO,
 			},
 			{
-				name:      "debug",
-				level:     DEBUG,
-				levelName: "DEBUG",
+				name:  "debug",
+				level: DEBUG,
 			},
 		}
 
 		for _, scn := range scenarios {
 			if scn.level != LevelMap[scn.name] {
-				t.Errorf("(%s) did not correspond to (%s) level", scn.name, scn.levelName)
+				t.Errorf("(%s) did not correspond to (%v) level", scn.name, scn.level)
+			}
+		}
+	})
+}
+
+func Test_LevelNameMap(t *testing.T) {
+	t.Run("level map have correct priorities", func(t *testing.T) {
+		scenarios := []struct {
+			name  string
+			level Level
+		}{
+			{
+				name:  "fatal",
+				level: FATAL,
+			},
+			{
+				name:  "error",
+				level: ERROR,
+			},
+			{
+				name:  "warning",
+				level: WARNING,
+			},
+			{
+				name:  "notice",
+				level: NOTICE,
+			},
+			{
+				name:  "info",
+				level: INFO,
+			},
+			{
+				name:  "debug",
+				level: DEBUG,
+			},
+		}
+
+		for _, scn := range scenarios {
+			if scn.name != LevelNameMap[scn.level] {
+				t.Errorf("(%v) did not correspond to (%s) name", scn.level, scn.name)
 			}
 		}
 	})

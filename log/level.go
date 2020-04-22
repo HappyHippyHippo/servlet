@@ -28,3 +28,14 @@ var LevelMap = map[string]Level{
 	"info":    INFO,
 	"debug":   DEBUG,
 }
+
+// LevelNameMap defines a relation between a code level identifier of a
+// logging level and human-readable string representation of that level.
+var LevelNameMap = map[Level]string{
+	FATAL:   "fatal",
+	ERROR:   "error",
+	WARNING: "warning",
+	NOTICE:  "notice",
+	INFO:    "info",
+	DEBUG:   "debug",
+}
