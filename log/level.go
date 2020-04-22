@@ -10,8 +10,10 @@ const (
 	ERROR
 	// WARNING defines a warning logging level.
 	WARNING
-	// NOTICE defines a fatanotice logging level.
+	// NOTICE defines a notice logging level.
 	NOTICE
+	// INFO defines a info logging level.
+	INFO
 	// DEBUG defines a debug logging level.
 	DEBUG
 )
@@ -23,5 +25,17 @@ var LevelMap = map[string]Level{
 	"error":   ERROR,
 	"warning": WARNING,
 	"notice":  NOTICE,
+	"info":    INFO,
 	"debug":   DEBUG,
+}
+
+// LevelNameMap defines a relation between a code level identifier of a
+// logging level and human-readable string representation of that level.
+var LevelNameMap = map[Level]string{
+	FATAL:   "fatal",
+	ERROR:   "error",
+	WARNING: "warning",
+	NOTICE:  "notice",
+	INFO:    "info",
+	DEBUG:   "debug",
 }
