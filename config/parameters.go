@@ -45,37 +45,37 @@ const (
 	// config loaded id.
 	EnvContainerLoaderID = "SERVLET_CONTAINER_CONFIG_LOADER_ID"
 
-	// ContainerObserveFrequency defines the id to be used as the default of a
+	// ObserveFrequency defines the id to be used as the default of a
 	// config observable source frequancy time.
-	ContainerObserveFrequency = time.Second * 0
+	ObserveFrequency = time.Second * 0
 
-	// EnvContainerObserveFrequency defines the name of the environment variable
+	// EnvObserveFrequency defines the name of the environment variable
 	// to be checked for a overriding value for the config observe frequency.
-	EnvContainerObserveFrequency = "SERVLET_CONTAINER_CONFIG_OBSERVE_FREQUENCY"
+	EnvObserveFrequency = "SERVLET_CONFIG_OBSERVE_FREQUENCY"
 
-	// ContainerBaseSourceID defines the id to be used as the default of the
+	// BaseSourceID defines the id to be used as the default of the
 	// base config source id to be used as the loader entry.
-	ContainerBaseSourceID = "servlet.config.sources.base"
+	BaseSourceID = "base"
 
-	// EnvContainerBaseSourceID defines the name of the environment variable
+	// EnvBaseSourceID defines the name of the environment variable
 	// to be checked for a overriding value for the config base source id.
-	EnvContainerBaseSourceID = "SERVLET_CONTAINER_CONFIG_BASE_SOURCE_ID"
+	EnvBaseSourceID = "SERVLET_CONFIG_BASE_SOURCE_ID"
 
-	// ContainerBaseSourcePath defines the base config source path
+	// BaseSourcePath defines the base config source path
 	// to be used as the loader entry.
-	ContainerBaseSourcePath = "config/config.yaml"
+	BaseSourcePath = "config/config.yaml"
 
-	// EnvContainerBaseSourcePath defines the name of the environment variable
+	// EnvBaseSourcePath defines the name of the environment variable
 	// to be checked for a overriding value for the config base source path.
-	EnvContainerBaseSourcePath = "SERVLET_CONTAINER_CONFIG_BASE_SOURCE_PATH"
+	EnvBaseSourcePath = "SERVLET_CONFIG_BASE_SOURCE_PATH"
 
-	// ContainerBaseSourceFormat defines the base config source format
+	// BaseSourceFormat defines the base config source format
 	// to be used as the loader entry.
-	ContainerBaseSourceFormat = DecoderFormatYAML
+	BaseSourceFormat = DecoderFormatYAML
 
-	// EnvContainerBaseSourceFormat defines the name of the environment variable
+	// EnvBaseSourceFormat defines the name of the environment variable
 	// to be checked for a overriding value for the config base source format.
-	EnvContainerBaseSourceFormat = "SERVLET_CONTAINER_CONFIG_BASE_SOURCE_FORMAT"
+	EnvBaseSourceFormat = "SERVLET_CONFIG_BASE_SOURCE_FORMAT"
 )
 
 // Parameters defines the config provider parameters storing structure
@@ -145,24 +145,24 @@ func NewDefaultParameters() Parameters {
 		loaderID = env
 	}
 
-	observeFrequency := ContainerObserveFrequency
-	if env := os.Getenv(EnvContainerObserveFrequency); env != "" {
+	observeFrequency := ObserveFrequency
+	if env := os.Getenv(EnvObserveFrequency); env != "" {
 		seconds, _ := strconv.Atoi(env)
 		observeFrequency = time.Second * time.Duration(seconds)
 	}
 
-	baseSourceID := ContainerBaseSourceID
-	if env := os.Getenv(EnvContainerBaseSourceID); env != "" {
+	baseSourceID := BaseSourceID
+	if env := os.Getenv(EnvBaseSourceID); env != "" {
 		baseSourceID = env
 	}
 
-	baseSourcePath := ContainerBaseSourcePath
-	if env := os.Getenv(EnvContainerBaseSourcePath); env != "" {
+	baseSourcePath := BaseSourcePath
+	if env := os.Getenv(EnvBaseSourcePath); env != "" {
 		baseSourcePath = env
 	}
 
-	baseSourceFormat := ContainerBaseSourceFormat
-	if env := os.Getenv(EnvContainerBaseSourceFormat); env != "" {
+	baseSourceFormat := BaseSourceFormat
+	if env := os.Getenv(EnvBaseSourceFormat); env != "" {
 		baseSourceFormat = env
 	}
 

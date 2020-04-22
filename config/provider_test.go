@@ -415,7 +415,7 @@ func Test_Provider_Boot(t *testing.T) {
 		defer ctrl.Finish()
 
 		loader := NewMockLoader(ctrl)
-		loader.EXPECT().Load(ContainerBaseSourceID, ContainerBaseSourcePath, ContainerBaseSourceFormat).Times(1)
+		loader.EXPECT().Load(BaseSourceID, BaseSourcePath, BaseSourceFormat).Times(1)
 
 		container := NewMockContainer(ctrl)
 		container.EXPECT().Get(ContainerLoaderID).Return(loader)

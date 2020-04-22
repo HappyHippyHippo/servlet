@@ -69,13 +69,13 @@ func Test_NewDefaultParameters(t *testing.T) {
 			t.Errorf("stored (%v) decoder factory ID", value)
 		} else if value := parameters.LoaderID; value != ContainerLoaderID {
 			t.Errorf("stored (%v) loader ID", value)
-		} else if value := parameters.ObserveFrequency; value != ContainerObserveFrequency {
+		} else if value := parameters.ObserveFrequency; value != ObserveFrequency {
 			t.Errorf("stored (%v) observe frequecy", value)
-		} else if value := parameters.BaseSourceID; value != ContainerBaseSourceID {
+		} else if value := parameters.BaseSourceID; value != BaseSourceID {
 			t.Errorf("stored (%v) base source id", value)
-		} else if value := parameters.BaseSourcePath; value != ContainerBaseSourcePath {
+		} else if value := parameters.BaseSourcePath; value != BaseSourcePath {
 			t.Errorf("stored (%v) base source path", value)
-		} else if value := parameters.BaseSourceFormat; value != ContainerBaseSourceFormat {
+		} else if value := parameters.BaseSourceFormat; value != BaseSourceFormat {
 			t.Errorf("stored (%v) base source format", value)
 		}
 	})
@@ -141,8 +141,8 @@ func Test_NewDefaultParameters(t *testing.T) {
 	})
 
 	t.Run("creates a new parameters with the env observer frequency", func(t *testing.T) {
-		os.Setenv(EnvContainerObserveFrequency, strconv.Itoa(int(observeFrequency.Seconds())))
-		defer os.Setenv(EnvContainerObserveFrequency, "")
+		os.Setenv(EnvObserveFrequency, strconv.Itoa(int(observeFrequency.Seconds())))
+		defer os.Setenv(EnvObserveFrequency, "")
 
 		parameters := NewDefaultParameters()
 		if value := parameters.ObserveFrequency; value != observeFrequency {
@@ -151,8 +151,8 @@ func Test_NewDefaultParameters(t *testing.T) {
 	})
 
 	t.Run("creates a new parameters with the base source ID", func(t *testing.T) {
-		os.Setenv(EnvContainerBaseSourceID, baseSourceID)
-		defer os.Setenv(EnvContainerBaseSourceID, "")
+		os.Setenv(EnvBaseSourceID, baseSourceID)
+		defer os.Setenv(EnvBaseSourceID, "")
 
 		parameters := NewDefaultParameters()
 		if value := parameters.BaseSourceID; value != baseSourceID {
@@ -161,8 +161,8 @@ func Test_NewDefaultParameters(t *testing.T) {
 	})
 
 	t.Run("creates a new parameters with the env base source path", func(t *testing.T) {
-		os.Setenv(EnvContainerBaseSourcePath, baseSourcePath)
-		defer os.Setenv(EnvContainerBaseSourcePath, "")
+		os.Setenv(EnvBaseSourcePath, baseSourcePath)
+		defer os.Setenv(EnvBaseSourcePath, "")
 
 		parameters := NewDefaultParameters()
 		if value := parameters.BaseSourcePath; value != baseSourcePath {
@@ -171,8 +171,8 @@ func Test_NewDefaultParameters(t *testing.T) {
 	})
 
 	t.Run("creates a new parameters with the env base source format", func(t *testing.T) {
-		os.Setenv(EnvContainerBaseSourceFormat, baseSourceFormat)
-		defer os.Setenv(EnvContainerBaseSourceFormat, "")
+		os.Setenv(EnvBaseSourceFormat, baseSourceFormat)
+		defer os.Setenv(EnvBaseSourceFormat, "")
 
 		parameters := NewDefaultParameters()
 		if value := parameters.BaseSourceFormat; value != baseSourceFormat {
