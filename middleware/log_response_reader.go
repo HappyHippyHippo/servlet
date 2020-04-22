@@ -7,19 +7,21 @@ import (
 	"github.com/happyhippyhippo/servlet"
 )
 
-// LogResponseReader @TODO
+// LogResponseReader defines the interface methods of a response context reader
+// used to compose the data to be sent to the logger on a response event.
 type LogResponseReader interface {
 	Get(context servlet.Context) map[string]interface{}
 }
 
 type logResposeReader struct{}
 
-// NewLogResponseReader @TODO
+// NewLogResponseReader will instantiate a new basic response context reader.
 func NewLogResponseReader() LogResponseReader {
 	return &logResposeReader{}
 }
 
-// Get @TODO
+// Get process the context response and return the data to be
+// signaled to the logger.
 func (r logResposeReader) Get(context servlet.Context) map[string]interface{} {
 	response := context.(*gin.Context).Writer.(LogResponseWriter)
 

@@ -12,7 +12,9 @@ type logRequestReaderJSON struct {
 	model  interface{}
 }
 
-// NewLogRequestReaderJSON @TODO
+// NewLogRequestReaderJSON will instantiate a new request event context
+// reader JSON decorator used to parse the request body as a JSON and add
+// the parsed content into the logging data.
 func NewLogRequestReaderJSON(reader LogRequestReader, model interface{}) (LogRequestReader, error) {
 	if reader == nil {
 		return nil, fmt.Errorf("Invalid nil 'reader' argument")
@@ -24,7 +26,8 @@ func NewLogRequestReaderJSON(reader LogRequestReader, model interface{}) (LogReq
 	}, nil
 }
 
-// Get @TODO
+// Get process the context request and add the extra bodyJson if the body
+// content can be parsed as JSON.
 func (r logRequestReaderJSON) Get(context servlet.Context) map[string]interface{} {
 	data := r.reader.Get(context)
 

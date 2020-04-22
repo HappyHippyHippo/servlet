@@ -12,7 +12,9 @@ type logRequestReaderXML struct {
 	model  interface{}
 }
 
-// NewLogRequestReaderXML @TODO
+// NewLogRequestReaderXML will instantiate a new request event context
+// reader XML decorator used to parse the request body as a XML and add
+// the parsed content into the logging data.
 func NewLogRequestReaderXML(reader LogRequestReader, model interface{}) (LogRequestReader, error) {
 	if reader == nil {
 		return nil, fmt.Errorf("Invalid nil 'reader' argument")
@@ -24,7 +26,8 @@ func NewLogRequestReaderXML(reader LogRequestReader, model interface{}) (LogRequ
 	}, nil
 }
 
-// Get @TODO
+// Get process the context request and add the extra bodyJson if the body
+// content can be parsed as XML.
 func (r logRequestReaderXML) Get(context servlet.Context) map[string]interface{} {
 	data := r.reader.Get(context)
 
