@@ -36,12 +36,12 @@ func Test_LogMiddleware_Execute(t *testing.T) {
 	var next gin.HandlerFunc = func(*gin.Context) { callCount = callCount + 1 }
 
 	request := map[string]interface{}{"type": "request"}
-	reqReader := NewMockLogRequestReader(ctrl)
-	reqReader.EXPECT().Get(context).Return(request).Times(1)
+	requestReader := NewMockLogRequestReader(ctrl)
+	requestReader.EXPECT().Get(context).Return(request).Times(1)
 
 	response := map[string]interface{}{"type": "response"}
-	resReader := NewMockLogResponseReader(ctrl)
-	resReader.EXPECT().Get(context).Return(response).Times(1)
+	responseReader := NewMockLogResponseReader(ctrl)
+	responseReader.EXPECT().Get(context).Return(response).Times(1)
 
 	logger := NewMockLogger(ctrl)
 	gomock.InOrder(
@@ -52,8 +52,8 @@ func Test_LogMiddleware_Execute(t *testing.T) {
 	parameters := NewLogMiddlewareParameters(next, logger)
 	parameters.Logger = logger
 	parameters.Next = next
-	parameters.ReqReader = reqReader
-	parameters.ResReader = resReader
+	parameters.RequestReader = requestReader
+	parameters.ResponseReader = responseReader
 
 	mw := NewLogMiddleware(parameters)
 

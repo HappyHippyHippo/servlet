@@ -10,35 +10,48 @@ import (
 )
 
 const (
-	// LogChannel @TODO
+	// LogChannel defines the channel id to be used when the log middleware
+	// sends the logging signal to the logger instance.
 	LogChannel = "conn"
 
-	// EnvLogChannel @TODO
+	// EnvLogChannel defines the name of the environment
+	// variable to be checked for a overriding value for the channel id used
+	// on the logging signal call.
 	EnvLogChannel = "SERVLET_LOG_MIDDLEWARE_CHANNEL"
 
-	// LogLevel @TODO
+	// LogLevel defines the logging level to be used when the log middleware
+	// sends the logging signal to the logger instance.
 	LogLevel = log.INFO
 
-	// EnvLogLevel @TODO
+	// EnvLogLevel defines the name of the environment
+	// variable to be checked for a overriding value for the logging level
+	// used on the logging signal call.
 	EnvLogLevel = "SERVLET_LOG_MIDDLEWARE_LEVEL"
 
-	// LogRequestMessage @TODO
+	// LogRequestMessage defines the request event logging message to be used
+	// when the log middleware sends the logging signal to the logger instance.
 	LogRequestMessage = "Request"
 
-	// EnvLogRequestMessage @TODO
+	// EnvLogRequestMessage defines the name of the environment
+	// variable to be checked for a overriding value for the request event
+	// logging message used on the logging signal call
 	EnvLogRequestMessage = "SERVLET_LOG_MIDDLEWARE_REQUEST_MESSAGE"
 
-	// LogResponseMessage @TODO
+	// LogResponseMessage defines the response event logging message to be used
+	// when the log middleware sends the logging signal to the logger instance.
 	LogResponseMessage = "Response"
 
-	// EnvLogResponseMessage @TODO
+	// EnvLogResponseMessage defines the name of the environment
+	// variable to be checked for a overriding value for the response event
+	// logging message used on the logging signal call
 	EnvLogResponseMessage = "SERVLET_LOG_MIDDLEWARE_RESPONSE_MESSAGE"
 )
 
-// LogMiddlewareParameters @type
+// LogMiddlewareParameters defines the storing structure of the parameters
+// used to configure the logging middleware.
 type LogMiddlewareParameters struct {
-	ReqReader          LogRequestReader
-	ResReader          LogResponseReader
+	RequestReader      LogRequestReader
+	ResponseReader     LogResponseReader
 	Next               gin.HandlerFunc
 	Logger             log.Logger
 	LogChannel         string
@@ -47,7 +60,10 @@ type LogMiddlewareParameters struct {
 	LogResponseMessage string
 }
 
-// NewLogMiddlewareParameters @TODO
+// NewLogMiddlewareParameters will instantiate a new log middleware parameters
+// instance used to configure a log middleware. If environment variables have
+// been set for the log environment, the returned parameters structure will
+// reflect those values.
 func NewLogMiddlewareParameters(next gin.HandlerFunc, logger log.Logger) LogMiddlewareParameters {
 	logChannel := LogChannel
 	if env := os.Getenv(EnvLogChannel); env != "" {
@@ -75,8 +91,8 @@ func NewLogMiddlewareParameters(next gin.HandlerFunc, logger log.Logger) LogMidd
 	}
 
 	return LogMiddlewareParameters{
-		ReqReader:          NewLogRequestReader(),
-		ResReader:          NewLogResponseReader(),
+		RequestReader:      NewLogRequestReader(),
+		ResponseReader:     NewLogResponseReader(),
 		Next:               next,
 		Logger:             logger,
 		LogChannel:         logChannel,

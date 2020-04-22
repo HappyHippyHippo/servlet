@@ -1,37 +1,34 @@
 package middleware
 
 import (
-	"encoding/json"
 	"time"
 
 	"github.com/gin-gonic/gin"
 	"github.com/happyhippyhippo/servlet"
 )
 
-// LogResponseReader @TODO
+// LogResponseReader defines the interface methods of a response context reader
+// used to compose the data to be sent to the logger on a response event.
 type LogResponseReader interface {
 	Get(context servlet.Context) map[string]interface{}
 }
 
 type logResposeReader struct{}
 
-// NewLogResponseReader @TODO
+// NewLogResponseReader will instantiate a new basic response context reader.
 func NewLogResponseReader() LogResponseReader {
 	return &logResposeReader{}
 }
 
-// Get @TODO
+// Get process the context response and return the data to be
+// signaled to the logger.
 func (r logResposeReader) Get(context servlet.Context) map[string]interface{} {
 	response := context.(*gin.Context).Writer.(LogResponseWriter)
-
-	var bytesBody []byte = response.Body()
-	var jsonBody interface{}
-	json.Unmarshal(bytesBody, &jsonBody)
 
 	return map[string]interface{}{
 		"status":  response.Status(),
 		"headers": r.headers(response),
-		"body":    map[string]interface{}{"raw": string(bytesBody), "json": jsonBody},
+		"body":    string(response.Body()),
 		"time":    time.Now().Format("2006-01-02T15:04:05.000-0700"),
 	}
 }
