@@ -16,6 +16,7 @@ type TriggerCallback func() error
 /// Trigger
 /// ---------------------------------------------------------------------------
 
+// Trigger defines the base trigger instance functionality.
 type Trigger struct {
 	timer       time.Duration
 	callback    TriggerCallback
@@ -58,6 +59,8 @@ func (t *Trigger) Stop() {
 /// PulseTrigger
 /// ---------------------------------------------------------------------------
 
+// PulseTrigger defines a trigger instance used to execute a process once
+// after a defines period of time.
 type PulseTrigger struct {
 	Trigger
 }
@@ -100,6 +103,8 @@ func NewPulseTrigger(delay time.Duration, callback TriggerCallback) (*PulseTrigg
 /// RecurringTrigger
 /// ---------------------------------------------------------------------------
 
+// RecurringTrigger defines a trigger instance used to execute a process
+// periodically with a defined frequency.
 type RecurringTrigger struct {
 	Trigger
 }

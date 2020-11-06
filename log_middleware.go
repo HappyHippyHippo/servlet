@@ -61,6 +61,8 @@ const (
 /// LogMiddlewareRequestReader
 /// ---------------------------------------------------------------------------
 
+// LogMiddlewareRequestReader defines the interface of a request reader used
+// in the log middleware.
 type LogMiddlewareRequestReader interface {
 	Get(context GinContext) map[string]interface{}
 }
@@ -69,7 +71,7 @@ type LogMiddlewareRequestReader interface {
 /// LogMiddlewareBasicRequestReader
 /// ---------------------------------------------------------------------------
 
-// LogMiddlewareBasicRequestReader defines the interface methods of a request
+// LogMiddlewareBasicRequestReader defines the methods of a request
 // context reader used to compose the data to be sent to the logger on a
 // request event.
 type LogMiddlewareBasicRequestReader struct{}
@@ -111,23 +113,25 @@ func (LogMiddlewareBasicRequestReader) body(request *http.Request) string {
 }
 
 /// ---------------------------------------------------------------------------
-/// LogMiddlewareJsonRequestReader
+/// LogMiddlewareJSONRequestReader
 /// ---------------------------------------------------------------------------
 
-type LogMiddlewareJsonRequestReader struct {
+// LogMiddlewareJSONRequestReader defines a request reader used to parse a
+// JSON body content.
+type LogMiddlewareJSONRequestReader struct {
 	reader LogMiddlewareRequestReader
 	model  interface{}
 }
 
-// NewLogMiddlewareJsonRequestReader will instantiate a new request event context
+// NewLogMiddlewareJSONRequestReader will instantiate a new request event context
 // reader JSON decorator used to parse the request body as a JSON and add
 // the parsed content into the logging data.
-func NewLogMiddlewareJsonRequestReader(reader LogMiddlewareRequestReader, model interface{}) (*LogMiddlewareJsonRequestReader, error) {
+func NewLogMiddlewareJSONRequestReader(reader LogMiddlewareRequestReader, model interface{}) (*LogMiddlewareJSONRequestReader, error) {
 	if reader == nil {
 		return nil, fmt.Errorf("invalid nil 'reader' argument")
 	}
 
-	return &LogMiddlewareJsonRequestReader{
+	return &LogMiddlewareJSONRequestReader{
 		reader: reader,
 		model:  model,
 	}, nil
@@ -135,7 +139,7 @@ func NewLogMiddlewareJsonRequestReader(reader LogMiddlewareRequestReader, model 
 
 // Get process the context request and add the extra bodyJson if the body
 // content can be parsed as JSON.
-func (r LogMiddlewareJsonRequestReader) Get(context GinContext) map[string]interface{} {
+func (r LogMiddlewareJSONRequestReader) Get(context GinContext) map[string]interface{} {
 	data := r.reader.Get(context)
 
 	if err := json.Unmarshal([]byte(data["body"].(string)), &r.model); err == nil {
@@ -146,23 +150,25 @@ func (r LogMiddlewareJsonRequestReader) Get(context GinContext) map[string]inter
 }
 
 /// ---------------------------------------------------------------------------
-/// LogMiddlewareXmlRequestReader
+/// LogMiddlewareXMLRequestReader
 /// ---------------------------------------------------------------------------
 
-type LogMiddlewareXmlRequestReader struct {
+// LogMiddlewareXMLRequestReader defines a request reader used to parse a
+// XML body content.
+type LogMiddlewareXMLRequestReader struct {
 	reader LogMiddlewareRequestReader
 	model  interface{}
 }
 
-// NewLogMiddlewareXmlRequestReader will instantiate a new request event context
+// NewLogMiddlewareXMLRequestReader will instantiate a new request event context
 // reader XML decorator used to parse the request body as a XML and add
 // the parsed content into the logging data.
-func NewLogMiddlewareXmlRequestReader(reader LogMiddlewareRequestReader, model interface{}) (*LogMiddlewareXmlRequestReader, error) {
+func NewLogMiddlewareXMLRequestReader(reader LogMiddlewareRequestReader, model interface{}) (*LogMiddlewareXMLRequestReader, error) {
 	if reader == nil {
 		return nil, fmt.Errorf("invalid nil 'reader' argument")
 	}
 
-	return &LogMiddlewareXmlRequestReader{
+	return &LogMiddlewareXMLRequestReader{
 		reader: reader,
 		model:  model,
 	}, nil
@@ -170,7 +176,7 @@ func NewLogMiddlewareXmlRequestReader(reader LogMiddlewareRequestReader, model i
 
 // Get process the context request and add the extra bodyJson if the body
 // content can be parsed as XML.
-func (r LogMiddlewareXmlRequestReader) Get(context GinContext) map[string]interface{} {
+func (r LogMiddlewareXMLRequestReader) Get(context GinContext) map[string]interface{} {
 	data := r.reader.Get(context)
 
 	if err := xml.Unmarshal([]byte(data["body"].(string)), &r.model); err == nil {
@@ -184,6 +190,8 @@ func (r LogMiddlewareXmlRequestReader) Get(context GinContext) map[string]interf
 /// LogMiddlewareResponseWriter
 /// ---------------------------------------------------------------------------
 
+// LogMiddlewareResponseWriter defines the interface of a response writer used
+// in the log middleware.
 type LogMiddlewareResponseWriter struct {
 	gin.ResponseWriter
 	body *bytes.Buffer
@@ -229,6 +237,9 @@ type LogMiddlewareResponseReader interface {
 /// LogMiddlewareBasicResponseReader
 /// ---------------------------------------------------------------------------
 
+// LogMiddlewareBasicResponseReader defines the methods of a response
+// context reader used to compose the data to be sent to the logger on a
+// response event.
 type LogMiddlewareBasicResponseReader struct{}
 
 // NewLogMiddlewareBasicResponseReader will instantiate a new basic response context reader.
@@ -261,20 +272,22 @@ func (LogMiddlewareBasicResponseReader) headers(response gin.ResponseWriter) map
 /// LogMiddlewareJsonResponseReader
 /// ---------------------------------------------------------------------------
 
-type LogMiddlewareJsonResponseReader struct {
+// LogMiddlewareJSONResponseReader defines a response reader used to parse a
+// JSON body content.
+type LogMiddlewareJSONResponseReader struct {
 	reader LogMiddlewareResponseReader
 	model  interface{}
 }
 
-// NewLogMiddlewareJsonResponseReader will instantiate a new response event
+// NewLogMiddlewareJSONResponseReader will instantiate a new response event
 // context reader JSON decorator used to parse the response   body as a JSON
 // and add the parsed content into the logging data.
-func NewLogMiddlewareJsonResponseReader(reader LogMiddlewareResponseReader, model interface{}) (*LogMiddlewareJsonResponseReader, error) {
+func NewLogMiddlewareJSONResponseReader(reader LogMiddlewareResponseReader, model interface{}) (*LogMiddlewareJSONResponseReader, error) {
 	if reader == nil {
 		return nil, fmt.Errorf("invalid nil 'reader' argument")
 	}
 
-	return &LogMiddlewareJsonResponseReader{
+	return &LogMiddlewareJSONResponseReader{
 		reader: reader,
 		model:  model,
 	}, nil
@@ -282,7 +295,7 @@ func NewLogMiddlewareJsonResponseReader(reader LogMiddlewareResponseReader, mode
 
 // Get process the context response and add the extra bodyJson if the body
 // content can be parsed as JSON.
-func (r LogMiddlewareJsonResponseReader) Get(context GinContext) map[string]interface{} {
+func (r LogMiddlewareJSONResponseReader) Get(context GinContext) map[string]interface{} {
 	data := r.reader.Get(context)
 
 	if err := json.Unmarshal([]byte(data["body"].(string)), &r.model); err == nil {
@@ -293,23 +306,25 @@ func (r LogMiddlewareJsonResponseReader) Get(context GinContext) map[string]inte
 }
 
 /// ---------------------------------------------------------------------------
-/// LogMiddlewareXmlResponseReader
+/// LogMiddlewareXMLResponseReader
 /// ---------------------------------------------------------------------------
 
-type LogMiddlewareXmlResponseReader struct {
+// LogMiddlewareXMLResponseReader defines a response reader used to parse a
+// XML body content.
+type LogMiddlewareXMLResponseReader struct {
 	reader LogMiddlewareResponseReader
 	model  interface{}
 }
 
-// NewLogMiddlewareXmlResponseReader will instantiate a new response event
+// NewLogMiddlewareXMLResponseReader will instantiate a new response event
 // context reader XML decorator used to parse the response body as a XML
 // and add the parsed content into the logging data.
-func NewLogMiddlewareXmlResponseReader(reader LogMiddlewareResponseReader, model interface{}) (*LogMiddlewareXmlResponseReader, error) {
+func NewLogMiddlewareXMLResponseReader(reader LogMiddlewareResponseReader, model interface{}) (*LogMiddlewareXMLResponseReader, error) {
 	if reader == nil {
 		return nil, fmt.Errorf("invalid nil 'reader' argument")
 	}
 
-	return &LogMiddlewareXmlResponseReader{
+	return &LogMiddlewareXMLResponseReader{
 		reader: reader,
 		model:  model,
 	}, nil
@@ -317,7 +332,7 @@ func NewLogMiddlewareXmlResponseReader(reader LogMiddlewareResponseReader, model
 
 // Get process the context response and add the extra bodyJson if the body
 // content can be parsed as XML.
-func (r LogMiddlewareXmlResponseReader) Get(context GinContext) map[string]interface{} {
+func (r LogMiddlewareXMLResponseReader) Get(context GinContext) map[string]interface{} {
 	data := r.reader.Get(context)
 
 	if err := xml.Unmarshal([]byte(data["body"].(string)), &r.model); err == nil {
@@ -344,7 +359,7 @@ type LogMiddlewareParams struct {
 	LogResponseMessage string
 }
 
-// NewLogMiddlewareParameters will instantiate a new log middleware parameters
+// NewLogMiddlewareParams will instantiate a new log middleware parameters
 // instance used to configure a log middleware. If environment variables have
 // been set for the log environment, the returned parameters structure will
 // reflect those values.

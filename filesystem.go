@@ -47,6 +47,8 @@ func NewFileSystemParams() *FileSystemParams {
 /// FileSystemProvider
 /// ---------------------------------------------------------------------------
 
+// FileSystemProvider defines the default configuration provider to be used on
+// the application initialization to register the file system adapter service.
 type FileSystemProvider struct {
 	params *FileSystemParams
 }

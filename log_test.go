@@ -234,7 +234,7 @@ func Test_LogFormatterFactory_Create(t *testing.T) {
 
 		factory := NewLogFormatterFactory()
 
-		formatter := NewLogJsonFormatter()
+		formatter := NewLogJSONFormatter()
 		strategy := NewMockLogFormatterFactoryStrategy(ctrl)
 		strategy.EXPECT().Accept(format).Return(true).Times(1)
 		strategy.EXPECT().Create().Return(formatter, nil).Times(1)
@@ -249,18 +249,18 @@ func Test_LogFormatterFactory_Create(t *testing.T) {
 }
 
 /// ---------------------------------------------------------------------------
-/// LogJsonFormatter
+/// LogJSONFormatter
 /// ---------------------------------------------------------------------------
 
-func Test_NewLogJsonFormatter(t *testing.T) {
+func Test_NewLogJSONFormatter(t *testing.T) {
 	t.Run("new json formatter", func(t *testing.T) {
-		if NewLogJsonFormatter() == nil {
+		if NewLogJSONFormatter() == nil {
 			t.Error("didn't returned a valid reference")
 		}
 	})
 }
 
-func Test_LogJsonFormatter_Format(t *testing.T) {
+func Test_LogJSONFormatter_Format(t *testing.T) {
 	t.Run("correctly format the message", func(t *testing.T) {
 		scenarios := []struct {
 			level    LogLevel
@@ -324,7 +324,7 @@ func Test_LogJsonFormatter_Format(t *testing.T) {
 			},
 		}
 
-		formatter := NewLogJsonFormatter()
+		formatter := NewLogJSONFormatter()
 
 		for _, scn := range scenarios {
 			result := formatter.Format(scn.level, scn.message, scn.fields)
@@ -337,25 +337,25 @@ func Test_LogJsonFormatter_Format(t *testing.T) {
 }
 
 /// ---------------------------------------------------------------------------
-/// LogJsonFormatterFactoryStrategy
+/// LogJSONFormatterFactoryStrategy
 /// ---------------------------------------------------------------------------
 
-func Test_NewLogJsonFormatterFactoryStrategy(t *testing.T) {
+func Test_NewLogJSONFormatterFactoryStrategy(t *testing.T) {
 	t.Run("new json formatter factory strategy", func(t *testing.T) {
-		if NewLogJsonFormatterFactoryStrategy() == nil {
+		if NewLogJSONFormatterFactoryStrategy() == nil {
 			t.Errorf("didn't returned a valid reference")
 		}
 	})
 }
 
-func Test_LogJsonFormatterFactoryStrategy_Accept(t *testing.T) {
+func Test_LogJSONFormatterFactoryStrategy_Accept(t *testing.T) {
 	t.Run("accept only json format", func(t *testing.T) {
 		scenarios := []struct {
 			format   string
 			expected bool
 		}{
 			{ // test json format
-				format:   LogFormatterFormatJson,
+				format:   LogFormatterFormatJSON,
 				expected: true,
 			},
 			{ // test non-json format (yaml)
@@ -364,7 +364,7 @@ func Test_LogJsonFormatterFactoryStrategy_Accept(t *testing.T) {
 			},
 		}
 
-		strategy := NewLogJsonFormatterFactoryStrategy()
+		strategy := NewLogJSONFormatterFactoryStrategy()
 
 		for _, scn := range scenarios {
 			if check := strategy.Accept(scn.format); check != scn.expected {
@@ -374,8 +374,8 @@ func Test_LogJsonFormatterFactoryStrategy_Accept(t *testing.T) {
 	})
 }
 
-func Test_LogJsonFormatterFactoryStrategy_Create(t *testing.T) {
-	strategy := NewLogJsonFormatterFactoryStrategy()
+func Test_LogJSONFormatterFactoryStrategy_Create(t *testing.T) {
+	strategy := NewLogJSONFormatterFactoryStrategy()
 
 	t.Run("create json formatter", func(t *testing.T) {
 		if formatter, err := strategy.Create(); err != nil {
@@ -384,7 +384,7 @@ func Test_LogJsonFormatterFactoryStrategy_Create(t *testing.T) {
 			t.Error("didn't returned a valid reference")
 		} else {
 			switch formatter.(type) {
-			case *LogJsonFormatter:
+			case *LogJSONFormatter:
 			default:
 				t.Errorf("didn't returned a new json formatter")
 			}
@@ -1100,7 +1100,7 @@ func Test_LogFileStreamFactoryStrategy_Accept(t *testing.T) {
 func Test_LogFileStreamFactoryStrategy_AcceptConfig(t *testing.T) {
 	sourceType := LogStreamTypeFile
 	path := "path"
-	format := LogFormatterFormatJson
+	format := LogFormatterFormatJSON
 	channels := []interface{}{"channel.1", "channel.2"}
 	level := "debug"
 
@@ -1319,7 +1319,7 @@ func Test_LogFileStreamFactoryStrategy_Create(t *testing.T) {
 		fileSystem := NewMockFs(ctrl)
 		fileSystem.EXPECT().OpenFile(path, os.O_APPEND|os.O_CREATE|os.O_WRONLY, os.FileMode(0644)).Return(file, nil).Times(1)
 		formatterFactory := NewLogFormatterFactory()
-		_ = formatterFactory.Register(NewLogJsonFormatterFactoryStrategy())
+		_ = formatterFactory.Register(NewLogJSONFormatterFactoryStrategy())
 		strategy, _ := NewLogFileStreamFactoryStrategy(fileSystem, formatterFactory)
 
 		if stream, err := strategy.Create(path, format, channels, level); err != nil {
@@ -1440,7 +1440,7 @@ func Test_FileStreamFactoryStrategy_CreateConfig(t *testing.T) {
 		fileSystem := NewMockFs(ctrl)
 		fileSystem.EXPECT().OpenFile(path, os.O_APPEND|os.O_CREATE|os.O_WRONLY, os.FileMode(0644)).Return(file, nil).Times(1)
 		formatterFactory := NewLogFormatterFactory()
-		_ = formatterFactory.Register(NewLogJsonFormatterFactoryStrategy())
+		_ = formatterFactory.Register(NewLogJSONFormatterFactoryStrategy())
 		strategy, _ := NewLogFileStreamFactoryStrategy(fileSystem, formatterFactory)
 
 		conf := ConfigPartial{"path": path, "format": format, "channels": channels, "level": level}
@@ -1991,7 +1991,7 @@ func Test_LogLoader_Load(t *testing.T) {
 		fileSystem := NewMockFs(ctrl)
 		fileSystem.EXPECT().OpenFile("path", os.O_APPEND|os.O_CREATE|os.O_WRONLY, os.FileMode(0644)).Return(file, nil).Times(1)
 		formatterFactory := NewLogFormatterFactory()
-		_ = formatterFactory.Register(NewLogJsonFormatterFactoryStrategy())
+		_ = formatterFactory.Register(NewLogJSONFormatterFactoryStrategy())
 
 		logger := NewLog()
 		streamFactory := NewLogStreamFactory()
@@ -2007,7 +2007,7 @@ func Test_LogLoader_Load(t *testing.T) {
 		_ = config.AddSource("id", 0, source)
 
 		writer := NewMockWriter(ctrl)
-		formatter := NewLogJsonFormatter()
+		formatter := NewLogJSONFormatter()
 		fileLogger, _ := NewLogFileStream(writer, formatter, []string{}, FATAL)
 		_ = logger.AddStream("id", fileLogger)
 
@@ -2034,7 +2034,7 @@ func Test_LogLoader_Load(t *testing.T) {
 		fileSystem := NewMockFs(ctrl)
 		fileSystem.EXPECT().OpenFile("path", os.O_APPEND|os.O_CREATE|os.O_WRONLY, os.FileMode(0644)).Return(file, nil).Times(1)
 		formatterFactory := NewLogFormatterFactory()
-		_ = formatterFactory.Register(NewLogJsonFormatterFactoryStrategy())
+		_ = formatterFactory.Register(NewLogJSONFormatterFactoryStrategy())
 
 		logger := NewLog()
 		streamFactory := NewLogStreamFactory()

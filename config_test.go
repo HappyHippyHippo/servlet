@@ -1066,8 +1066,8 @@ func Test_NewConfigFileSource(t *testing.T) {
 
 		decoderFactory := NewConfigDecoderFactory()
 
-		if stream, err := NewConfigFileSource("path", ConfigDecoderFormatYAML, nil, decoderFactory); stream != nil {
-			defer stream.Close()
+		if source, err := NewConfigFileSource("path", ConfigDecoderFormatYAML, nil, decoderFactory); source != nil {
+			defer source.Close()
 			t.Error("returned a valid reference")
 		} else if err == nil {
 			t.Error("didn't returned the expected error")
@@ -1082,8 +1082,8 @@ func Test_NewConfigFileSource(t *testing.T) {
 
 		fileSystem := NewMockFs(ctrl)
 
-		if stream, err := NewConfigFileSource("path", ConfigDecoderFormatYAML, fileSystem, nil); stream != nil {
-			defer stream.Close()
+		if source, err := NewConfigFileSource("path", ConfigDecoderFormatYAML, fileSystem, nil); source != nil {
+			defer source.Close()
 			t.Error("returned a valid reference")
 		} else if err == nil {
 			t.Error("didn't returned the expected error")
@@ -1103,8 +1103,8 @@ func Test_NewConfigFileSource(t *testing.T) {
 		fileSystem.EXPECT().OpenFile(path, os.O_RDONLY, os.FileMode(0644)).Return(nil, fmt.Errorf(expectedError)).Times(1)
 		decoderFactory := NewConfigDecoderFactory()
 
-		if stream, err := NewConfigFileSource(path, ConfigDecoderFormatYAML, fileSystem, decoderFactory); stream != nil {
-			defer stream.Close()
+		if source, err := NewConfigFileSource(path, ConfigDecoderFormatYAML, fileSystem, decoderFactory); source != nil {
+			defer source.Close()
 			t.Error("returned a valid reference")
 		} else if err == nil {
 			t.Error("didn't returned the expected error")
@@ -1125,8 +1125,8 @@ func Test_NewConfigFileSource(t *testing.T) {
 		fileSystem.EXPECT().OpenFile(path, os.O_RDONLY, os.FileMode(0644)).Return(file, nil).Times(1)
 		decoderFactory := NewConfigDecoderFactory()
 
-		if stream, err := NewConfigFileSource(path, "invalid_format", fileSystem, decoderFactory); stream != nil {
-			defer stream.Close()
+		if source, err := NewConfigFileSource(path, "invalid_format", fileSystem, decoderFactory); source != nil {
+			defer source.Close()
 			t.Error("returned a valid reference")
 		} else if err == nil {
 			t.Error("didn't returned the expected error")
@@ -1153,8 +1153,8 @@ func Test_NewConfigFileSource(t *testing.T) {
 		decoderFactory := NewConfigDecoderFactory()
 		_ = decoderFactory.Register(NewConfigYamlDecoderFactoryStrategy())
 
-		if stream, err := NewConfigFileSource(path, ConfigDecoderFormatYAML, fileSystem, decoderFactory); stream != nil {
-			defer stream.Close()
+		if source, err := NewConfigFileSource(path, ConfigDecoderFormatYAML, fileSystem, decoderFactory); source != nil {
+			defer source.Close()
 			t.Error("returned a valid reference")
 		} else if err == nil {
 			t.Error("didn't returned the expected error")
@@ -1180,21 +1180,21 @@ func Test_NewConfigFileSource(t *testing.T) {
 		decoderFactory := NewConfigDecoderFactory()
 		_ = decoderFactory.Register(NewConfigYamlDecoderFactoryStrategy())
 
-		if stream, err := NewConfigFileSource(path, ConfigDecoderFormatYAML, fileSystem, decoderFactory); stream == nil {
+		if source, err := NewConfigFileSource(path, ConfigDecoderFormatYAML, fileSystem, decoderFactory); source == nil {
 			t.Error("didn't returned a valid reference")
 		} else {
-			defer stream.Close()
+			defer source.Close()
 			if err != nil {
 				t.Errorf("returned the (%v) error", err)
-			} else if stream.mutex == nil {
+			} else if source.mutex == nil {
 				t.Error("didn't created the access mutex")
-			} else if stream.path != path {
+			} else if source.path != path {
 				t.Error("didn't stored the file path")
-			} else if stream.format != ConfigDecoderFormatYAML {
+			} else if source.format != ConfigDecoderFormatYAML {
 				t.Error("didn't stored the file content format")
-			} else if stream.fileSystem != fileSystem {
+			} else if source.fileSystem != fileSystem {
 				t.Error("didn't stored the file system adapter reference")
-			} else if stream.decoderFactory != decoderFactory {
+			} else if source.decoderFactory != decoderFactory {
 				t.Error("didn't stored the decoder factory reference")
 			}
 		}
@@ -1220,9 +1220,9 @@ func Test_NewConfigFileSource(t *testing.T) {
 		decoderFactory := NewConfigDecoderFactory()
 		_ = decoderFactory.Register(NewConfigYamlDecoderFactoryStrategy())
 
-		stream, _ := NewConfigFileSource(path, ConfigDecoderFormatYAML, fileSystem, decoderFactory)
+		source, _ := NewConfigFileSource(path, ConfigDecoderFormatYAML, fileSystem, decoderFactory)
 
-		if check := stream.partial; !reflect.DeepEqual(check, expected) {
+		if check := source.partial; !reflect.DeepEqual(check, expected) {
 			t.Error("didn't correctly stored the decoded partial")
 		}
 	})
@@ -1561,8 +1561,8 @@ func Test_NewConfigObservableFileSource(t *testing.T) {
 		ctrl := gomock.NewController(t)
 		defer ctrl.Finish()
 
-		if stream, err := NewConfigObservableFileSource(path, format, nil, decoderFactory); stream != nil {
-			defer stream.Close()
+		if source, err := NewConfigObservableFileSource(path, format, nil, decoderFactory); source != nil {
+			defer source.Close()
 			t.Error("returned a valid reference")
 		} else if err == nil {
 			t.Error("didn't returned the expected error")
@@ -1577,8 +1577,8 @@ func Test_NewConfigObservableFileSource(t *testing.T) {
 
 		fileSystem := NewMockFs(ctrl)
 
-		if stream, err := NewConfigObservableFileSource(path, format, fileSystem, nil); stream != nil {
-			defer stream.Close()
+		if source, err := NewConfigObservableFileSource(path, format, fileSystem, nil); source != nil {
+			defer source.Close()
 			t.Error("returned a valid reference")
 		} else if err == nil {
 			t.Error("didn't returned the expected error")
@@ -1596,8 +1596,8 @@ func Test_NewConfigObservableFileSource(t *testing.T) {
 		fileSystem := NewMockFs(ctrl)
 		fileSystem.EXPECT().Stat(path).Return(nil, fmt.Errorf(expectedError)).Times(1)
 
-		if stream, err := NewConfigObservableFileSource(path, format, fileSystem, decoderFactory); stream != nil {
-			defer stream.Close()
+		if source, err := NewConfigObservableFileSource(path, format, fileSystem, decoderFactory); source != nil {
+			defer source.Close()
 			t.Error("returned a valid reference")
 		} else if err == nil {
 			t.Error("didn't returned the expected error")
@@ -1618,8 +1618,8 @@ func Test_NewConfigObservableFileSource(t *testing.T) {
 		fileSystem.EXPECT().Stat(path).Return(fileInfo, nil).Times(1)
 		fileSystem.EXPECT().OpenFile(path, os.O_RDONLY, os.FileMode(0644)).Return(nil, fmt.Errorf(expectedError)).Times(1)
 
-		if stream, err := NewConfigObservableFileSource(path, format, fileSystem, decoderFactory); stream != nil {
-			defer stream.Close()
+		if source, err := NewConfigObservableFileSource(path, format, fileSystem, decoderFactory); source != nil {
+			defer source.Close()
 			t.Error("returned a valid reference")
 		} else if err == nil {
 			t.Error("didn't returned the expected error")
@@ -1640,8 +1640,8 @@ func Test_NewConfigObservableFileSource(t *testing.T) {
 		fileSystem.EXPECT().Stat(path).Return(fileInfo, nil).Times(1)
 		fileSystem.EXPECT().OpenFile(path, os.O_RDONLY, os.FileMode(0644)).Return(file, nil).Times(1)
 
-		if stream, err := NewConfigObservableFileSource(path, "invalid_format", fileSystem, decoderFactory); stream != nil {
-			defer stream.Close()
+		if source, err := NewConfigObservableFileSource(path, "invalid_format", fileSystem, decoderFactory); source != nil {
+			defer source.Close()
 			t.Error("returned a valid reference")
 		} else if err == nil {
 			t.Error("didn't returned the expected error")
@@ -1666,8 +1666,8 @@ func Test_NewConfigObservableFileSource(t *testing.T) {
 		fileSystem.EXPECT().Stat(path).Return(fileInfo, nil).Times(1)
 		fileSystem.EXPECT().OpenFile(path, os.O_RDONLY, os.FileMode(0644)).Return(file, nil).Times(1)
 
-		if stream, err := NewConfigObservableFileSource(path, format, fileSystem, decoderFactory); stream != nil {
-			defer stream.Close()
+		if source, err := NewConfigObservableFileSource(path, format, fileSystem, decoderFactory); source != nil {
+			defer source.Close()
 			t.Error("returned a valid reference")
 		} else if err == nil {
 			t.Error("didn't returned the expected error")
@@ -1696,23 +1696,23 @@ func Test_NewConfigObservableFileSource(t *testing.T) {
 		fileSystem.EXPECT().Stat(path).Return(fileInfo, nil).Times(1)
 		fileSystem.EXPECT().OpenFile(path, os.O_RDONLY, os.FileMode(0644)).Return(file, nil).Times(1)
 
-		if stream, err := NewConfigObservableFileSource(path, format, fileSystem, decoderFactory); stream == nil {
+		if source, err := NewConfigObservableFileSource(path, format, fileSystem, decoderFactory); source == nil {
 			t.Errorf("didn't returned a valid reference")
 		} else {
-			defer stream.Close()
+			defer source.Close()
 			if err != nil {
 				t.Errorf("returned the (%v) error", err)
-			} else if stream.mutex == nil {
+			} else if source.mutex == nil {
 				t.Error("didn't created the access mutex")
-			} else if stream.path != path {
+			} else if source.path != path {
 				t.Error("didn't stored the file path")
-			} else if stream.format != ConfigDecoderFormatYAML {
+			} else if source.format != ConfigDecoderFormatYAML {
 				t.Error("didn't stored the file content format")
-			} else if stream.fileSystem != fileSystem {
+			} else if source.fileSystem != fileSystem {
 				t.Error("didn't stored the file system adapter reference")
-			} else if stream.decoderFactory != decoderFactory {
+			} else if source.decoderFactory != decoderFactory {
 				t.Error("didn't stored the decoder factory reference")
-			} else if !reflect.DeepEqual(stream.partial, expected) {
+			} else if !reflect.DeepEqual(source.partial, expected) {
 				t.Error("didn't loaded the content correctly")
 			}
 		}
@@ -1738,10 +1738,10 @@ func Test_NewConfigObservableFileSource(t *testing.T) {
 		fileSystem.EXPECT().Stat(path).Return(fileInfo, nil).Times(1)
 		fileSystem.EXPECT().OpenFile(path, os.O_RDONLY, os.FileMode(0644)).Return(file, nil).Times(1)
 
-		stream, _ := NewConfigObservableFileSource(path, format, fileSystem, decoderFactory)
-		defer stream.Close()
+		source, _ := NewConfigObservableFileSource(path, format, fileSystem, decoderFactory)
+		defer source.Close()
 
-		if check := stream.partial; !reflect.DeepEqual(check, expected) {
+		if check := source.partial; !reflect.DeepEqual(check, expected) {
 			t.Error("didn't correctly stored the decoded partial")
 		}
 	})
@@ -1797,10 +1797,10 @@ func Test_ConfigObservableFileSource_Reload(t *testing.T) {
 		)
 		fileSystem.EXPECT().OpenFile(path, os.O_RDONLY, os.FileMode(0644)).Return(file, nil).Times(1)
 
-		stream, _ := NewConfigObservableFileSource(path, format, fileSystem, decoderFactory)
-		defer stream.Close()
+		source, _ := NewConfigObservableFileSource(path, format, fileSystem, decoderFactory)
+		defer source.Close()
 
-		if reloaded, err := stream.Reload(); reloaded {
+		if reloaded, err := source.Reload(); reloaded {
 			t.Error("flagged that was reloaded")
 		} else if err == nil {
 			t.Error("didn't returned the expected error")
@@ -1838,10 +1838,10 @@ func Test_ConfigObservableFileSource_Reload(t *testing.T) {
 			fileSystem.EXPECT().OpenFile(path, os.O_RDONLY, os.FileMode(0644)).Return(nil, fmt.Errorf(expectedError)),
 		)
 
-		stream, _ := NewConfigObservableFileSource(path, format, fileSystem, decoderFactory)
-		defer stream.Close()
+		source, _ := NewConfigObservableFileSource(path, format, fileSystem, decoderFactory)
+		defer source.Close()
 
-		if reloaded, err := stream.Reload(); reloaded {
+		if reloaded, err := source.Reload(); reloaded {
 			t.Error("flagged that was reloaded")
 		} else if err == nil {
 			t.Error("didn't returned the expected error")
@@ -1869,9 +1869,9 @@ func Test_ConfigObservableFileSource_Reload(t *testing.T) {
 		fileSystem.EXPECT().Stat(path).Return(fileInfo, nil).Times(2)
 		fileSystem.EXPECT().OpenFile(path, os.O_RDONLY, os.FileMode(0644)).Return(file, nil).Times(1)
 
-		stream, _ := NewConfigObservableFileSource(path, format, fileSystem, decoderFactory)
+		source, _ := NewConfigObservableFileSource(path, format, fileSystem, decoderFactory)
 
-		if reloaded, err := stream.Reload(); reloaded {
+		if reloaded, err := source.Reload(); reloaded {
 			t.Error("flagged that was reloaded")
 		} else if err != nil {
 			t.Errorf("returned the (%v) error", err)
@@ -1911,13 +1911,13 @@ func Test_ConfigObservableFileSource_Reload(t *testing.T) {
 			fileSystem.EXPECT().OpenFile(path, os.O_RDONLY, os.FileMode(0644)).Return(file2, nil),
 		)
 
-		stream, _ := NewConfigObservableFileSource(path, format, fileSystem, decoderFactory)
+		source, _ := NewConfigObservableFileSource(path, format, fileSystem, decoderFactory)
 
-		if reloaded, err := stream.Reload(); !reloaded {
+		if reloaded, err := source.Reload(); !reloaded {
 			t.Error("flagged that was not reloaded")
 		} else if err != nil {
 			t.Errorf("returned the (%v) error", err)
-		} else if !reflect.DeepEqual(expected, stream.partial) {
+		} else if !reflect.DeepEqual(expected, source.partial) {
 			t.Error("didn't stored the reloaded configuration")
 		}
 	})
@@ -2242,6 +2242,292 @@ func Test_ConfigObservableFileSourceFactoryStrategy_CreateConfig(t *testing.T) {
 				}
 			default:
 				t.Error("didn't returned a new file source")
+			}
+		}
+	})
+}
+
+/// ---------------------------------------------------------------------------
+/// ConfigEnvSource
+/// ---------------------------------------------------------------------------
+
+func Test_NewConfigEnvSource(t *testing.T) {
+	t.Run("with empty mapping", func(t *testing.T) {
+		if source, err := NewConfigEnvSource(map[string]string{}); source == nil {
+			t.Errorf("didn't returned a valid reference")
+		} else {
+			defer source.Close()
+			if err != nil {
+				t.Errorf("returned the (%v) error", err)
+			} else if source.mutex == nil {
+				t.Error("didn't created the access mutex")
+			} else if !reflect.DeepEqual(source.partial, ConfigPartial{}) {
+				t.Error("didn't loaded the content correctly")
+			}
+		}
+	})
+
+	t.Run("with root mapping", func(t *testing.T) {
+		env := "env"
+		value := "value"
+		mapping := map[string]string{env: "id"}
+		expected := ConfigPartial{"id": value}
+
+		_ = os.Setenv(env, value)
+		defer func() { _ = os.Setenv(env, "") }()
+
+		if source, err := NewConfigEnvSource(mapping); source == nil {
+			t.Errorf("didn't returned a valid reference")
+		} else {
+			defer source.Close()
+			if err != nil {
+				t.Errorf("returned the (%v) error", err)
+			} else if source.mutex == nil {
+				t.Error("didn't created the access mutex")
+			} else if !reflect.DeepEqual(source.partial, expected) {
+				t.Error("didn't loaded the content correctly")
+			}
+		}
+	})
+
+	t.Run("with multi-level mapping", func(t *testing.T) {
+		env := "env"
+		value := "value"
+		mapping := map[string]string{env: "root.node"}
+		expected := ConfigPartial{"root": ConfigPartial{"node": value}}
+
+		_ = os.Setenv(env, value)
+		defer func() { _ = os.Setenv(env, "") }()
+
+		if source, err := NewConfigEnvSource(mapping); source == nil {
+			t.Errorf("didn't returned a valid reference")
+		} else {
+			defer source.Close()
+			if err != nil {
+				t.Errorf("returned the (%v) error", err)
+			} else if source.mutex == nil {
+				t.Error("didn't created the access mutex")
+			} else if !reflect.DeepEqual(source.partial, expected) {
+				t.Error("didn't loaded the content correctly")
+			}
+		}
+	})
+
+	t.Run("with multi-level mapping and node override", func(t *testing.T) {
+		mapping := map[string]string{
+			"env1": "root",
+			"env2": "root.node",
+		}
+
+		expected := ConfigPartial{"root": ConfigPartial{"node": "value2"}}
+
+		_ = os.Setenv("env1", "value1")
+		_ = os.Setenv("env2", "value2")
+		defer func() { _ = os.Setenv("env1", ""); _ = os.Setenv("env2", "") }()
+
+		if source, err := NewConfigEnvSource(mapping); source == nil {
+			t.Errorf("didn't returned a valid reference")
+		} else {
+			defer source.Close()
+			if err != nil {
+				t.Errorf("returned the (%v) error", err)
+			} else if source.mutex == nil {
+				t.Error("didn't created the access mutex")
+			} else if !reflect.DeepEqual(source.partial, expected) {
+				t.Error("didn't loaded the content correctly")
+			}
+		}
+	})
+}
+
+/// ---------------------------------------------------------------------------
+/// ConfigEnvSourceFactoryStrategy
+/// ---------------------------------------------------------------------------
+
+func Test_NewConfigEnvSourceFactoryStrategy(t *testing.T) {
+	ctrl := gomock.NewController(t)
+	defer ctrl.Finish()
+
+	t.Run("new env source factory strategy", func(t *testing.T) {
+		if strategy, err := NewConfigEnvSourceFactoryStrategy(); err != nil {
+			t.Errorf("returned the (%v) error", err)
+		} else if strategy == nil {
+			t.Error("didn't returned a valid reference")
+		}
+	})
+}
+
+func Test_ConfigEnvSourceFactoryStrategy_Accept(t *testing.T) {
+	sourceType := ConfigSourceTypeEnv
+	mapping := map[string]string{}
+
+	strategy, _ := NewConfigEnvSourceFactoryStrategy()
+
+	t.Run("don't accept if at least 1 extra arguments are passed", func(t *testing.T) {
+		if strategy.Accept(sourceType) {
+			t.Error("returned true")
+		}
+	})
+
+	t.Run("don't accept if the mappings is not a string", func(t *testing.T) {
+		if strategy.Accept(sourceType, 1) {
+			t.Error("returned true")
+		}
+	})
+
+	t.Run("accept only env type", func(t *testing.T) {
+		scenarios := []struct {
+			sourceType string
+			expected   bool
+		}{
+			{ // test env type
+				sourceType: ConfigSourceTypeEnv,
+				expected:   true,
+			},
+			{ // test non-file type (file)
+				sourceType: ConfigSourceTypeFile,
+				expected:   false,
+			},
+		}
+
+		for _, scn := range scenarios {
+			if check := strategy.Accept(scn.sourceType, mapping); check != scn.expected {
+				t.Errorf("for the type (%s), returned (%v)", scn.sourceType, check)
+			}
+		}
+	})
+}
+
+func Test_ConfigEnvSourceFactoryStrategy_AcceptConfig(t *testing.T) {
+	sourceType := ConfigSourceTypeEnv
+	mapping := map[string]string{}
+
+	strategy, _ := NewConfigEnvSourceFactoryStrategy()
+
+	t.Run("don't accept if type is missing", func(t *testing.T) {
+		partial := ConfigPartial{}
+		if strategy.AcceptConfig(partial) {
+			t.Error("returned true")
+		}
+	})
+
+	t.Run("don't accept if type is not a string", func(t *testing.T) {
+		partial := ConfigPartial{"type": 123}
+		if strategy.AcceptConfig(partial) {
+			t.Error("returned true")
+		}
+	})
+
+	t.Run("don't accept if mapping is missing", func(t *testing.T) {
+		partial := ConfigPartial{"type": sourceType}
+		if strategy.AcceptConfig(partial) {
+			t.Error("returned true")
+		}
+	})
+
+	t.Run("don't accept if mapping is not a string", func(t *testing.T) {
+		partial := ConfigPartial{"type": sourceType, "mapping": 123}
+		if strategy.AcceptConfig(partial) {
+			t.Error("returned true")
+		}
+	})
+
+	t.Run("don't accept if invalid type", func(t *testing.T) {
+		partial := ConfigPartial{"type": ConfigSourceTypeFile, "mapping": mapping}
+		if strategy.AcceptConfig(partial) {
+			t.Error("returned true")
+		}
+	})
+
+	t.Run("accept config", func(t *testing.T) {
+		partial := ConfigPartial{"type": sourceType, "mapping": mapping}
+		if !strategy.AcceptConfig(partial) {
+			t.Error("returned false")
+		}
+	})
+}
+
+func Test_ConfigEnvSourceFactoryStrategy_Create(t *testing.T) {
+	t.Run("non-map mapping", func(t *testing.T) {
+		strategy, _ := NewConfigEnvSourceFactoryStrategy()
+
+		if source, err := strategy.Create(123); source != nil {
+			t.Error("returned a valid reference")
+		} else if err == nil {
+			t.Error("didn't returned the expected error")
+		} else if strings.Index(err.Error(), "interface conversion") != 0 {
+			t.Errorf("returned the (%v) error", err)
+		}
+	})
+
+	t.Run("create the source", func(t *testing.T) {
+		env := "env"
+		path := "root"
+		value := "value"
+		mapping := map[string]string{env: path}
+		expected := ConfigPartial{path: value}
+
+		_ = os.Setenv(env, value)
+		defer func() { _ = os.Setenv(env, "") }()
+
+		strategy, _ := NewConfigEnvSourceFactoryStrategy()
+
+		if source, err := strategy.Create(mapping); err != nil {
+			t.Errorf("returned the (%v) error", err)
+		} else if source == nil {
+			t.Error("didn't returned a valid reference")
+		} else {
+			switch s := source.(type) {
+			case *ConfigEnvSource:
+				if !reflect.DeepEqual(s.partial, expected) {
+					t.Error("didn't loaded the content correctly")
+				}
+			default:
+				t.Error("didn't returned a new env source")
+			}
+		}
+	})
+}
+
+func Test_ConfigEnvSourceFactoryStrategy_CreateConfig(t *testing.T) {
+	t.Run("non-map mapping", func(t *testing.T) {
+		strategy, _ := NewConfigEnvSourceFactoryStrategy()
+
+		conf := ConfigPartial{"mapping": 123}
+		if source, err := strategy.CreateConfig(conf); source != nil {
+			t.Error("returned a valid reference")
+		} else if err == nil {
+			t.Error("didn't returned the expected error")
+		} else if strings.Index(err.Error(), "interface conversion") != 0 {
+			t.Errorf("returned the (%v) error", err)
+		}
+	})
+
+	t.Run("create the source", func(t *testing.T) {
+		env := "env"
+		path := "root"
+		value := "value"
+		expected := ConfigPartial{path: value}
+
+		_ = os.Setenv(env, value)
+		defer func() { _ = os.Setenv(env, "") }()
+
+		strategy, _ := NewConfigEnvSourceFactoryStrategy()
+
+		conf := ConfigPartial{"mapping": ConfigPartial{env: path}}
+
+		if source, err := strategy.CreateConfig(conf); err != nil {
+			t.Errorf("returned the (%v) error", err)
+		} else if source == nil {
+			t.Error("didn't returned a valid reference")
+		} else {
+			switch s := source.(type) {
+			case *ConfigEnvSource:
+				if !reflect.DeepEqual(s.partial, expected) {
+					t.Error("didn't loaded the content correctly")
+				}
+			default:
+				t.Error("didn't returned a new env source")
 			}
 		}
 	})

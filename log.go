@@ -18,7 +18,7 @@ import (
 const (
 	// LogFormatterFormatJSON defines the value to be used to declare a JSON
 	// log formatter format.
-	LogFormatterFormatJson = "json"
+	LogFormatterFormatJSON = "json"
 
 	// LogStreamTypeFile defines the value to be used to declare a file
 	// log stream type.
@@ -132,6 +132,8 @@ type LogFormatterFactoryStrategy interface {
 /// LogFormatterFactory
 /// ---------------------------------------------------------------------------
 
+// LogFormatterFactory defines the log formatter factory structure used to
+// instantiate log formatters, based on registered instantiation strategies.
 type LogFormatterFactory struct {
 	strategies []LogFormatterFactoryStrategy
 }
@@ -170,20 +172,21 @@ func (f LogFormatterFactory) Create(format string, args ...interface{}) (LogForm
 }
 
 /// ---------------------------------------------------------------------------
-/// LogJsonFormatter
+/// LogJSONFormatter
 /// ---------------------------------------------------------------------------
 
-type LogJsonFormatter struct{}
+// LogJSONFormatter defines a JSON based log formatter.
+type LogJSONFormatter struct{}
 
-// NewJSONFormatter will instantiate a new JSON formatter that will take the
+// NewLogJSONFormatter will instantiate a new JSON formatter that will take the
 // logging entry request and create the output JSON string.
-func NewLogJsonFormatter() LogFormatter {
-	return &LogJsonFormatter{}
+func NewLogJSONFormatter() LogFormatter {
+	return &LogJSONFormatter{}
 }
 
 // Format will create the output JSON string message formatted with the content
 // of the passed level, fields and message
-func (f LogJsonFormatter) Format(level LogLevel, message string, fields map[string]interface{}) string {
+func (f LogJSONFormatter) Format(level LogLevel, message string, fields map[string]interface{}) string {
 	if fields == nil {
 		fields = map[string]interface{}{}
 	}
@@ -197,27 +200,30 @@ func (f LogJsonFormatter) Format(level LogLevel, message string, fields map[stri
 }
 
 /// ---------------------------------------------------------------------------
-/// LogJsonFormatterFactoryStrategy
+/// LogJSONFormatterFactoryStrategy
 /// ---------------------------------------------------------------------------
 
-type LogJsonFormatterFactoryStrategy struct{}
+// LogJSONFormatterFactoryStrategy defines the log formatter instantiation
+// strategy to be registered in the factory so a Json based log formatter
+// could be instantiated.
+type LogJSONFormatterFactoryStrategy struct{}
 
-// NewLogJsonFormatterFactoryStrategy instantiate a new json logging output
+// NewLogJSONFormatterFactoryStrategy instantiate a new json logging output
 // formatter factory strategy that will enable the formatter factory to
 // instantiate a new content to json formatter.
-func NewLogJsonFormatterFactoryStrategy() *LogJsonFormatterFactoryStrategy {
-	return &LogJsonFormatterFactoryStrategy{}
+func NewLogJSONFormatterFactoryStrategy() *LogJSONFormatterFactoryStrategy {
+	return &LogJSONFormatterFactoryStrategy{}
 }
 
 // Accept will check if the formatter factory strategy can instantiate a
 // formatter of the requested format.
-func (LogJsonFormatterFactoryStrategy) Accept(format string, _ ...interface{}) bool {
-	return format == LogFormatterFormatJson
+func (LogJSONFormatterFactoryStrategy) Accept(format string, _ ...interface{}) bool {
+	return format == LogFormatterFormatJSON
 }
 
 // Create will instantiate the desired formatter instance.
-func (LogJsonFormatterFactoryStrategy) Create(_ ...interface{}) (LogFormatter, error) {
-	return NewLogJsonFormatter(), nil
+func (LogJSONFormatterFactoryStrategy) Create(_ ...interface{}) (LogFormatter, error) {
+	return NewLogJSONFormatter(), nil
 }
 
 /// ---------------------------------------------------------------------------
@@ -240,6 +246,7 @@ type LogStream interface {
 /// LogBaseStream
 /// ---------------------------------------------------------------------------
 
+// LogBaseStream defines the base interaction with a log stream instance.
 type LogBaseStream struct {
 	formatter LogFormatter
 	channels  []string
@@ -315,6 +322,8 @@ type LogStreamFactoryStrategy interface {
 /// LogStreamFactory
 /// ---------------------------------------------------------------------------
 
+// LogStreamFactory defines a log stream factory instance used to instantiate
+// log stream based in the registered log stream instantiation strategies.
 type LogStreamFactory struct {
 	strategies []LogStreamFactoryStrategy
 }
@@ -367,6 +376,7 @@ func (f LogStreamFactory) CreateConfig(conf ConfigPartial) (LogStream, error) {
 /// LogFileStream
 /// ---------------------------------------------------------------------------
 
+// LogFileStream defines a file output log stream.
 type LogFileStream struct {
 	LogBaseStream
 	writer io.Writer
@@ -435,6 +445,8 @@ func (s LogFileStream) Broadcast(level LogLevel, message string, fields map[stri
 /// LogFileStreamFactoryStrategy
 /// ---------------------------------------------------------------------------
 
+// LogFileStreamFactoryStrategy defines a instantiation strategy to be used
+// by the log stream factory for file output log stream instantiation.
 type LogFileStreamFactoryStrategy struct {
 	fileSystem       afero.Fs
 	formatterFactory *LogFormatterFactory
@@ -574,6 +586,7 @@ func (LogFileStreamFactoryStrategy) channels(entries []interface{}) []string {
 /// Log
 /// ---------------------------------------------------------------------------
 
+// Log defines a logging proxy for all the registered logging streams.
 type Log struct {
 	streams map[string]LogStream
 }
@@ -669,6 +682,8 @@ func (l Log) Stream(id string) LogStream {
 /// LogLoader
 /// ---------------------------------------------------------------------------
 
+// LogLoader defines the log instantiation and initialization of a new
+// log proxy.
 type LogLoader struct {
 	logger        *Log
 	streamFactory *LogStreamFactory
@@ -799,6 +814,8 @@ func NewLogParams() *LogParams {
 /// LogProvider
 /// ---------------------------------------------------------------------------
 
+// LogProvider defines the default logging provider to be used on
+// the application initialization to register the logging services.
 type LogProvider struct {
 	params *LogParams
 }
@@ -823,7 +840,7 @@ func (p LogProvider) Register(container *AppContainer) error {
 
 	_ = container.Add(p.params.FormatterFactoryID, func(container *AppContainer) (interface{}, error) {
 		formatterFactory := NewLogFormatterFactory()
-		_ = formatterFactory.Register(NewLogJsonFormatterFactoryStrategy())
+		_ = formatterFactory.Register(NewLogJSONFormatterFactoryStrategy())
 
 		return formatterFactory, nil
 	})

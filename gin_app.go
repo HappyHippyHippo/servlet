@@ -165,7 +165,7 @@ type GinContext interface {
 /// GinAppParams
 /// ---------------------------------------------------------------------------
 
-// AppParams defines the application parameters storing structure
+// GinAppParams defines the application parameters storing structure
 // that will be needed when instantiating a new application
 type GinAppParams struct {
 	EngineID string

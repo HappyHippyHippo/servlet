@@ -31,6 +31,10 @@ const (
 	// observable file config source type.
 	ConfigSourceTypeObservableFile = "observable_file"
 
+	// ConfigSourceTypeEnv defines the value to be used to declare a
+	// environment config source type.
+	ConfigSourceTypeEnv = "env"
+
 	// ContainerConfigID defines the id to be used as the default of a
 	// config instance in the application container.
 	ContainerConfigID = "servlet.config"
@@ -112,6 +116,7 @@ const (
 /// ConfigPartial
 /// ---------------------------------------------------------------------------
 
+// ConfigPartial defined a type used to store configuration information.
 type ConfigPartial map[interface{}]interface{}
 
 // Has will check if a requested path exists in the config partial.
@@ -252,6 +257,8 @@ type ConfigDecoderFactoryStrategy interface {
 /// ConfigDecoderFactory
 /// ---------------------------------------------------------------------------
 
+// ConfigDecoderFactory defined the instance used to instantiate a new config
+// stream decoder for a specific encoding format.
 type ConfigDecoderFactory struct {
 	strategies []ConfigDecoderFactoryStrategy
 }
@@ -300,6 +307,8 @@ type underlyingConfigYamlDecoder interface {
 	Decode(partial interface{}) error
 }
 
+// ConfigYamlDecoder defines an instance used to decode s YAML encoded config
+// source stream
 type ConfigYamlDecoder struct {
 	reader  io.Reader
 	decoder underlyingConfigYamlDecoder
@@ -347,6 +356,8 @@ func (d ConfigYamlDecoder) Decode() (ConfigPartial, error) {
 /// ConfigYamlDecoderFactoryStrategy
 /// ---------------------------------------------------------------------------
 
+// ConfigYamlDecoderFactoryStrategy defines a strategy used to instantiate
+// a YAML config stream decoder.
 type ConfigYamlDecoderFactoryStrategy struct{}
 
 // NewConfigYamlDecoderFactoryStrategy instantiate a new yaml decoder factory
@@ -384,6 +395,7 @@ func (ConfigYamlDecoderFactoryStrategy) Create(args ...interface{}) (ConfigDecod
 /// ConfigSource
 /// ---------------------------------------------------------------------------
 
+// ConfigSource defines the base interface of a config source.
 type ConfigSource interface {
 	Close()
 	Has(path string) bool
@@ -394,6 +406,7 @@ type ConfigSource interface {
 /// ConfigBaseSource
 /// ---------------------------------------------------------------------------
 
+// ConfigBaseSource defines a base code of a config source instance.
 type ConfigBaseSource struct {
 	mutex   sync.Locker
 	partial ConfigPartial
@@ -436,7 +449,7 @@ func (s *ConfigBaseSource) Get(path string) interface{} {
 /// ConfigObservableSource
 /// ---------------------------------------------------------------------------
 
-// ObservableSource interface extends the Source interface with methods
+// ConfigObservableSource interface extends the Source interface with methods
 // specific to sources that will be checked for updates in a regular
 // periodicity defined in the config object where the source will be
 // registered.
@@ -462,6 +475,9 @@ type ConfigSourceFactoryStrategy interface {
 /// ConfigSourceFactory
 /// ---------------------------------------------------------------------------
 
+// ConfigSourceFactory defines a config source factory that uses a list of
+// registered instantiation strategies to perform the config source
+// instantiation.
 type ConfigSourceFactory struct {
 	strategies []ConfigSourceFactoryStrategy
 }
@@ -515,6 +531,7 @@ func (f ConfigSourceFactory) CreateConfig(conf ConfigPartial) (ConfigSource, err
 /// ConfigFileSource
 /// ---------------------------------------------------------------------------
 
+// ConfigFileSource defines an instance of a file stream configuration source.
 type ConfigFileSource struct {
 	ConfigBaseSource
 	path           string
@@ -580,6 +597,8 @@ func (s *ConfigFileSource) load() error {
 /// ConfigFileSourceFactoryStrategy
 /// ---------------------------------------------------------------------------
 
+// ConfigFileSourceFactoryStrategy defines a config file source instantiation
+// strategy to be used by the config sources factory instance.
 type ConfigFileSourceFactoryStrategy struct {
 	fileSystem     afero.Fs
 	decoderFactory *ConfigDecoderFactory
@@ -676,6 +695,9 @@ func (s ConfigFileSourceFactoryStrategy) CreateConfig(conf ConfigPartial) (sourc
 /// ConfigObservableFileSource
 /// ---------------------------------------------------------------------------
 
+// ConfigObservableFileSource defines an instance of a file stream
+// configuration source that will be checked for changes periodically in a
+// config defined frequency.
 type ConfigObservableFileSource struct {
 	ConfigFileSource
 	timestamp time.Time
@@ -741,6 +763,9 @@ func (s *ConfigObservableFileSource) Reload() (bool, error) {
 /// ConfigObservableFileSourceFactoryStrategy
 /// ---------------------------------------------------------------------------
 
+// ConfigObservableFileSourceFactoryStrategy defines a observable config file
+// source instantiation strategy to be used by the config sources factory
+// instance.
 type ConfigObservableFileSourceFactoryStrategy struct {
 	fileSystem     afero.Fs
 	decoderFactory *ConfigDecoderFactory
@@ -834,6 +859,141 @@ func (s ConfigObservableFileSourceFactoryStrategy) CreateConfig(conf ConfigParti
 }
 
 /// ---------------------------------------------------------------------------
+/// ConfigEnvSource
+/// ---------------------------------------------------------------------------
+
+// ConfigEnvSource defines an instance of a environment variables stream
+// configuration source.
+type ConfigEnvSource struct {
+	ConfigBaseSource
+	mapper map[string]string
+}
+
+// NewConfigEnvSource instantiate a new source that read a list of environment
+// variables into mapped config paths.
+func NewConfigEnvSource(mapper map[string]string) (*ConfigEnvSource, error) {
+	s := &ConfigEnvSource{
+		ConfigBaseSource: ConfigBaseSource{
+			mutex:   &sync.Mutex{},
+			partial: ConfigPartial{},
+		},
+		mapper: mapper,
+	}
+
+	_ = s.load()
+
+	return s, nil
+}
+
+func (s *ConfigEnvSource) load() error {
+	for v, p := range s.mapper {
+		if env := os.Getenv(v); env != "" {
+			step := s.partial
+			sections := strings.Split(p, ".")
+			for i, section := range sections {
+				if i != len(sections)-1 {
+					if _, ok := step[section]; ok == false {
+						step[section] = ConfigPartial{}
+					}
+
+					switch step[section].(type) {
+					case ConfigPartial:
+					default:
+						step[section] = ConfigPartial{}
+					}
+
+					step = step[section].(ConfigPartial)
+				} else {
+					step[section] = env
+				}
+			}
+		}
+	}
+
+	return nil
+}
+
+/// ---------------------------------------------------------------------------
+/// ConfigEnvSourceFactoryStrategy
+/// ---------------------------------------------------------------------------
+
+// ConfigEnvSourceFactoryStrategy defines a environment config source
+// instantiation strategy to be used by the config sources factory
+// instance.
+type ConfigEnvSourceFactoryStrategy struct{}
+
+// NewConfigEnvSourceFactoryStrategy instantiate a new environment
+// source factory strategy that will enable the source factory to instantiate
+// a new observable file configuration source.
+func NewConfigEnvSourceFactoryStrategy() (*ConfigEnvSourceFactoryStrategy, error) {
+	return &ConfigEnvSourceFactoryStrategy{}, nil
+}
+
+// Accept will check if the source factory strategy can instantiate a
+// new source of the requested type. Also, validates that there is the path
+// and content format extra parameters, and thar this parameters are strings.
+func (ConfigEnvSourceFactoryStrategy) Accept(sourceType string, args ...interface{}) bool {
+	if sourceType != ConfigSourceTypeEnv || len(args) < 1 {
+		return false
+	}
+
+	switch args[0].(type) {
+	case map[string]string:
+	default:
+		return false
+	}
+
+	return true
+}
+
+// AcceptConfig will check if the source factory strategy can instantiate a
+// source where the data to check comes from a configuration partial instance.
+func (s ConfigEnvSourceFactoryStrategy) AcceptConfig(conf ConfigPartial) (check bool) {
+	defer func() {
+		if r := recover(); r != nil {
+			check = false
+		}
+	}()
+
+	sourceType := conf.String("type")
+	mapping := conf.Get("mapping")
+
+	return s.Accept(sourceType, mapping)
+}
+
+// Create will instantiate the desired environment source instance.
+func (s ConfigEnvSourceFactoryStrategy) Create(args ...interface{}) (source ConfigSource, err error) {
+	defer func() {
+		if r := recover(); r != nil {
+			source = nil
+			err = r.(error)
+		}
+	}()
+
+	mappings := args[0].(map[string]string)
+
+	return NewConfigEnvSource(mappings)
+}
+
+// CreateConfig will instantiate the desired environment source instance
+// where the initialization data comes from a configuration partial instance.
+func (s ConfigEnvSourceFactoryStrategy) CreateConfig(conf ConfigPartial) (source ConfigSource, err error) {
+	defer func() {
+		if r := recover(); r != nil {
+			source = nil
+			err = r.(error)
+		}
+	}()
+
+	mapping := map[string]string{}
+	for k, v := range conf.Get("mapping").(ConfigPartial) {
+		mapping[k.(string)] = v.(string)
+	}
+
+	return s.Create(mapping)
+}
+
+/// ---------------------------------------------------------------------------
 /// ConfigObserver
 /// ---------------------------------------------------------------------------
 
@@ -871,6 +1031,7 @@ type configRefObserver struct {
 	callback ConfigObserver
 }
 
+// Config defines the instance of a configuration managing structure.
 type Config struct {
 	mutex     sync.Locker
 	sources   []configRefSource
@@ -1358,6 +1519,8 @@ func (c *Config) rebuild() {
 /// ConfigLoader
 /// ---------------------------------------------------------------------------
 
+// ConfigLoader defines the config instantiation and initialization of a new
+// config managing structure.
 type ConfigLoader struct {
 	config        *Config
 	sourceFactory *ConfigSourceFactory
@@ -1522,6 +1685,8 @@ func NewConfigParams() *ConfigParams {
 /// ConfigProvider
 /// ---------------------------------------------------------------------------
 
+// ConfigProvider defines the default configuration provider to be used on
+// the application initialization to register the configuration services.
 type ConfigProvider struct {
 	params *ConfigParams
 }

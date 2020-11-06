@@ -29,7 +29,7 @@ func Test_NewLogMiddlewareBasicRequestReader(t *testing.T) {
 func Test_LogMiddlewareBasicRequestReader_Get(t *testing.T) {
 	method := "method"
 	uri := "/resource"
-	reqUrl, _ := url.Parse("http://domain" + uri)
+	reqURL, _ := url.Parse("http://domain" + uri)
 	headers := map[string][]string{"header1": {"value1"}, "header2": {"value2"}}
 	jsonBody := map[string]interface{}{"field": "value"}
 	rawBody, _ := json.Marshal(jsonBody)
@@ -46,7 +46,7 @@ func Test_LogMiddlewareBasicRequestReader_Get(t *testing.T) {
 	context := &gin.Context{}
 	context.Request = &http.Request{}
 	context.Request.Method = method
-	context.Request.URL = reqUrl
+	context.Request.URL = reqURL
 	context.Request.Header = headers
 	context.Request.Body = body
 
@@ -79,17 +79,17 @@ func Test_LogMiddlewareBasicRequestReader_Get(t *testing.T) {
 }
 
 /// ---------------------------------------------------------------------------
-/// LogMiddlewareJsonRequestReader
+/// LogMiddlewareJSONRequestReader
 /// ---------------------------------------------------------------------------
 
-func Test_NewLogMiddlewareJsonRequestReader(t *testing.T) {
+func Test_NewLogMiddlewareJSONRequestReader(t *testing.T) {
 	ctrl := gomock.NewController(t)
 	defer ctrl.Finish()
 
 	reader := NewMockLogMiddlewareRequestReader(ctrl)
 
 	t.Run("nil reader", func(t *testing.T) {
-		if reader, err := NewLogMiddlewareJsonRequestReader(nil, nil); err == nil {
+		if reader, err := NewLogMiddlewareJSONRequestReader(nil, nil); err == nil {
 			t.Error("didn't returned the expected error")
 		} else if err.Error() != "invalid nil 'reader' argument" {
 			t.Errorf("returned the (%v) error", err)
@@ -99,7 +99,7 @@ func Test_NewLogMiddlewareJsonRequestReader(t *testing.T) {
 	})
 
 	t.Run("new decorator", func(t *testing.T) {
-		if reader, err := NewLogMiddlewareJsonRequestReader(reader, nil); err != nil {
+		if reader, err := NewLogMiddlewareJSONRequestReader(reader, nil); err != nil {
 			t.Errorf("returned the (%v) error", err)
 		} else if reader == nil {
 			t.Error("didn't returned a valid reference")
@@ -109,7 +109,7 @@ func Test_NewLogMiddlewareJsonRequestReader(t *testing.T) {
 	t.Run("new decorator with model", func(t *testing.T) {
 		model := struct{ data string }{data: "bing"}
 
-		if reader, err := NewLogMiddlewareJsonRequestReader(reader, model); err != nil {
+		if reader, err := NewLogMiddlewareJSONRequestReader(reader, model); err != nil {
 			t.Errorf("returned the (%v) error", err)
 		} else if reader == nil {
 			t.Error("didn't returned a valid reference")
@@ -119,7 +119,7 @@ func Test_NewLogMiddlewareJsonRequestReader(t *testing.T) {
 	})
 }
 
-func Test_LogMiddlewareJsonRequestReader_Get(t *testing.T) {
+func Test_LogMiddlewareJSONRequestReader_Get(t *testing.T) {
 	t.Run("non-json body does not add decorated field", func(t *testing.T) {
 		data := map[string]interface{}{"body": "{"}
 
@@ -130,7 +130,7 @@ func Test_LogMiddlewareJsonRequestReader_Get(t *testing.T) {
 		reader := NewMockLogMiddlewareRequestReader(ctrl)
 		reader.EXPECT().Get(context).Return(data).Times(1)
 
-		jsonReader, _ := NewLogMiddlewareJsonRequestReader(reader, nil)
+		jsonReader, _ := NewLogMiddlewareJSONRequestReader(reader, nil)
 		result := jsonReader.Get(context)
 
 		if _, ok := result["bodyJson"]; ok {
@@ -149,7 +149,7 @@ func Test_LogMiddlewareJsonRequestReader_Get(t *testing.T) {
 		reader := NewMockLogMiddlewareRequestReader(ctrl)
 		reader.EXPECT().Get(context).Return(data).Times(1)
 
-		jsonReader, _ := NewLogMiddlewareJsonRequestReader(reader, nil)
+		jsonReader, _ := NewLogMiddlewareJSONRequestReader(reader, nil)
 		result := jsonReader.Get(context)
 
 		if body, ok := result["bodyJson"]; !ok {
@@ -161,17 +161,17 @@ func Test_LogMiddlewareJsonRequestReader_Get(t *testing.T) {
 }
 
 /// ---------------------------------------------------------------------------
-/// LogMiddlewareXmlRequestReader
+/// LogMiddlewareXMLRequestReader
 /// ---------------------------------------------------------------------------
 
-func Test_NewLogMiddlewareXmlRequestReader(t *testing.T) {
+func Test_NewLogMiddlewareXMLRequestReader(t *testing.T) {
 	ctrl := gomock.NewController(t)
 	defer ctrl.Finish()
 
 	reader := NewMockLogMiddlewareRequestReader(ctrl)
 
 	t.Run("error if reader is nil", func(t *testing.T) {
-		if reader, err := NewLogMiddlewareXmlRequestReader(nil, nil); err == nil {
+		if reader, err := NewLogMiddlewareXMLRequestReader(nil, nil); err == nil {
 			t.Error("didn't returned the expected error")
 		} else if err.Error() != "invalid nil 'reader' argument" {
 			t.Errorf("returned the (%v) error", err)
@@ -181,7 +181,7 @@ func Test_NewLogMiddlewareXmlRequestReader(t *testing.T) {
 	})
 
 	t.Run("new decorator", func(t *testing.T) {
-		if reader, err := NewLogMiddlewareXmlRequestReader(reader, nil); err != nil {
+		if reader, err := NewLogMiddlewareXMLRequestReader(reader, nil); err != nil {
 			t.Errorf("returned the (%v) error", err)
 		} else if reader == nil {
 			t.Error("didn't return a valid reference")
@@ -191,7 +191,7 @@ func Test_NewLogMiddlewareXmlRequestReader(t *testing.T) {
 	t.Run("new decorator with model", func(t *testing.T) {
 		model := struct{ data string }{data: "bing"}
 
-		if reader, err := NewLogMiddlewareXmlRequestReader(reader, model); err != nil {
+		if reader, err := NewLogMiddlewareXMLRequestReader(reader, model); err != nil {
 			t.Errorf("returned the (%v) error", err)
 		} else if reader == nil {
 			t.Error("didn't returned a valid reference")
@@ -201,7 +201,7 @@ func Test_NewLogMiddlewareXmlRequestReader(t *testing.T) {
 	})
 }
 
-func Test_LogMiddlewareXmlRequestReader_Get(t *testing.T) {
+func Test_LogMiddlewareXMLRequestReader_Get(t *testing.T) {
 	model := struct {
 		XMLName xml.Name `xml:"message"`
 		Field   string   `xml:"field"`
@@ -217,7 +217,7 @@ func Test_LogMiddlewareXmlRequestReader_Get(t *testing.T) {
 		reader := NewMockLogMiddlewareRequestReader(ctrl)
 		reader.EXPECT().Get(context).Return(data).Times(1)
 
-		xmlReader, _ := NewLogMiddlewareXmlRequestReader(reader, &model)
+		xmlReader, _ := NewLogMiddlewareXMLRequestReader(reader, &model)
 		result := xmlReader.Get(context)
 
 		if _, ok := result["bodyXml"]; ok {
@@ -239,7 +239,7 @@ func Test_LogMiddlewareXmlRequestReader_Get(t *testing.T) {
 		reader := NewMockLogMiddlewareRequestReader(ctrl)
 		reader.EXPECT().Get(context).Return(data).Times(1)
 
-		xmlReader, _ := NewLogMiddlewareXmlRequestReader(reader, &model)
+		xmlReader, _ := NewLogMiddlewareXMLRequestReader(reader, &model)
 		result := xmlReader.Get(context)
 
 		if body, ok := result["bodyXml"]; !ok {
@@ -367,17 +367,17 @@ func Test_LogMiddlewareBasicResponseReader_Get(t *testing.T) {
 }
 
 /// ---------------------------------------------------------------------------
-/// LogMiddlewareJsonResponseReader
+/// LogMiddlewareJSONResponseReader
 /// ---------------------------------------------------------------------------
 
-func Test_NewLogMiddlewareJsonResponseReader(t *testing.T) {
+func Test_NewLogMiddlewareJSONResponseReader(t *testing.T) {
 	ctrl := gomock.NewController(t)
 	defer ctrl.Finish()
 
 	reader := NewMockLogMiddlewareResponseReader(ctrl)
 
 	t.Run("nil reader", func(t *testing.T) {
-		if reader, err := NewLogMiddlewareJsonResponseReader(nil, nil); err == nil {
+		if reader, err := NewLogMiddlewareJSONResponseReader(nil, nil); err == nil {
 			t.Error("didn't returned the expected error")
 		} else if err.Error() != "invalid nil 'reader' argument" {
 			t.Errorf("returned the (%v) error", err)
@@ -387,7 +387,7 @@ func Test_NewLogMiddlewareJsonResponseReader(t *testing.T) {
 	})
 
 	t.Run("new decorator", func(t *testing.T) {
-		if reader, err := NewLogMiddlewareJsonResponseReader(reader, nil); err != nil {
+		if reader, err := NewLogMiddlewareJSONResponseReader(reader, nil); err != nil {
 			t.Errorf("returned the (%v) error", err)
 		} else if reader == nil {
 			t.Error("didn't returned a valid reference")
@@ -397,7 +397,7 @@ func Test_NewLogMiddlewareJsonResponseReader(t *testing.T) {
 	t.Run("new decorator with model", func(t *testing.T) {
 		model := struct{ data string }{data: "bing"}
 
-		if reader, err := NewLogMiddlewareJsonResponseReader(reader, model); err != nil {
+		if reader, err := NewLogMiddlewareJSONResponseReader(reader, model); err != nil {
 			t.Errorf("returned the (%v) error", err)
 		} else if reader == nil {
 			t.Error("didn't returned a valid reference")
@@ -407,7 +407,7 @@ func Test_NewLogMiddlewareJsonResponseReader(t *testing.T) {
 	})
 }
 
-func Test_LogMiddlewareJsonResponseReader_Get(t *testing.T) {
+func Test_LogMiddlewareJSONResponseReader_Get(t *testing.T) {
 	t.Run("non-json body does not add decorated field", func(t *testing.T) {
 		data := map[string]interface{}{"body": "{"}
 
@@ -418,7 +418,7 @@ func Test_LogMiddlewareJsonResponseReader_Get(t *testing.T) {
 		reader := NewMockLogMiddlewareResponseReader(ctrl)
 		reader.EXPECT().Get(context).Return(data).Times(1)
 
-		jsonReader, _ := NewLogMiddlewareJsonResponseReader(reader, nil)
+		jsonReader, _ := NewLogMiddlewareJSONResponseReader(reader, nil)
 		result := jsonReader.Get(context)
 
 		if _, ok := result["bodyJson"]; ok {
@@ -437,7 +437,7 @@ func Test_LogMiddlewareJsonResponseReader_Get(t *testing.T) {
 		reader := NewMockLogMiddlewareResponseReader(ctrl)
 		reader.EXPECT().Get(context).Return(data).Times(1)
 
-		jsonReader, _ := NewLogMiddlewareJsonResponseReader(reader, nil)
+		jsonReader, _ := NewLogMiddlewareJSONResponseReader(reader, nil)
 		result := jsonReader.Get(context)
 
 		if body, ok := result["bodyJson"]; !ok {
@@ -449,17 +449,17 @@ func Test_LogMiddlewareJsonResponseReader_Get(t *testing.T) {
 }
 
 /// ---------------------------------------------------------------------------
-/// LogMiddlewareXmlResponseReader
+/// LogMiddlewareXMLResponseReader
 /// ---------------------------------------------------------------------------
 
-func Test_NewLogMiddlewareXmlResponseReader(t *testing.T) {
+func Test_NewLogMiddlewareXMLResponseReader(t *testing.T) {
 	ctrl := gomock.NewController(t)
 	defer ctrl.Finish()
 
 	reader := NewMockLogMiddlewareResponseReader(ctrl)
 
 	t.Run("nil reader", func(t *testing.T) {
-		if reader, err := NewLogMiddlewareXmlResponseReader(nil, nil); err == nil {
+		if reader, err := NewLogMiddlewareXMLResponseReader(nil, nil); err == nil {
 			t.Error("didn't returned the expected error")
 		} else if err.Error() != "invalid nil 'reader' argument" {
 			t.Errorf("returned the (%v) error", err)
@@ -469,7 +469,7 @@ func Test_NewLogMiddlewareXmlResponseReader(t *testing.T) {
 	})
 
 	t.Run("new decorator", func(t *testing.T) {
-		if reader, err := NewLogMiddlewareXmlResponseReader(reader, nil); err != nil {
+		if reader, err := NewLogMiddlewareXMLResponseReader(reader, nil); err != nil {
 			t.Errorf("returned the (%v) error", err)
 		} else if reader == nil {
 			t.Error("didn't returned a valid reference")
@@ -479,7 +479,7 @@ func Test_NewLogMiddlewareXmlResponseReader(t *testing.T) {
 	t.Run("new decorator with model", func(t *testing.T) {
 		model := struct{ data string }{data: "bing"}
 
-		if reader, err := NewLogMiddlewareXmlResponseReader(reader, model); err != nil {
+		if reader, err := NewLogMiddlewareXMLResponseReader(reader, model); err != nil {
 			t.Errorf("returned the (%v) error", err)
 		} else if reader == nil {
 			t.Error("didn't return a valid reference")
@@ -489,7 +489,7 @@ func Test_NewLogMiddlewareXmlResponseReader(t *testing.T) {
 	})
 }
 
-func Test_LogMiddlewareXmlResponseReader_Get(t *testing.T) {
+func Test_LogMiddlewareXMLResponseReader_Get(t *testing.T) {
 	model := struct {
 		XMLName xml.Name `xml:"message"`
 		Field   string   `xml:"field"`
@@ -505,7 +505,7 @@ func Test_LogMiddlewareXmlResponseReader_Get(t *testing.T) {
 		reader := NewMockLogMiddlewareResponseReader(ctrl)
 		reader.EXPECT().Get(context).Return(data).Times(1)
 
-		xmlReader, _ := NewLogMiddlewareXmlResponseReader(reader, &model)
+		xmlReader, _ := NewLogMiddlewareXMLResponseReader(reader, &model)
 		result := xmlReader.Get(context)
 
 		if _, ok := result["bodyXml"]; ok {
@@ -527,7 +527,7 @@ func Test_LogMiddlewareXmlResponseReader_Get(t *testing.T) {
 		reader := NewMockLogMiddlewareResponseReader(ctrl)
 		reader.EXPECT().Get(context).Return(data).Times(1)
 
-		xmlReader, _ := NewLogMiddlewareXmlResponseReader(reader, &model)
+		xmlReader, _ := NewLogMiddlewareXMLResponseReader(reader, &model)
 		result := xmlReader.Get(context)
 
 		if body, ok := result["bodyXml"]; !ok {
