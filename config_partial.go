@@ -106,10 +106,10 @@ func (p ConfigPartial) merge(p2 ConfigPartial) ConfigPartial {
 		case ConfigPartial:
 			switch p[key].(type) {
 			case ConfigPartial:
-				p[key] = p[key].(ConfigPartial).merge(value.(ConfigPartial))
 			default:
-				p[key] = value
+				p[key] = ConfigPartial{}
 			}
+			p[key].(ConfigPartial).merge(value.(ConfigPartial))
 		default:
 			p[key] = value
 		}

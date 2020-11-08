@@ -502,7 +502,7 @@ func (c *Config) reload() error {
 func (c *Config) rebuild() {
 	p := ConfigPartial{}
 	for _, reg := range c.sources {
-		p = p.merge(reg.source.Get("").(ConfigPartial))
+		p.merge(reg.source.Get("").(ConfigPartial))
 	}
 
 	c.partial = p

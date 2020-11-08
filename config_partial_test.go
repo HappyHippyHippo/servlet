@@ -500,4 +500,21 @@ func Test_ConfigPartial_Merge(t *testing.T) {
 			}
 		}
 	})
+
+	t.Run("merging works with copies", func(t *testing.T) {
+		target := ConfigPartial{}
+		partial1 := ConfigPartial{"node1": ConfigPartial{"node2": "value"}}
+		partial2 := ConfigPartial{"node1": ConfigPartial{"node2": ConfigPartial{"node3": "value"}}}
+		expected := ConfigPartial{"node1": ConfigPartial{"node2": "value"}}
+
+		target.merge(partial1)
+		result := target.merge(partial2)
+		if !reflect.DeepEqual(result, partial2) {
+			t.Errorf("resulted in (%s) when merging (%v) and (%v), expecting (%v)", result, partial1, partial2, partial2)
+		}
+
+		if !reflect.DeepEqual(expected, partial1) {
+			t.Errorf("resulted in (%s) first partial when merging (%v) and (%v), expecting (%v)", partial1, expected, partial2, expected)
+		}
+	})
 }
