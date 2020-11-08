@@ -1,6 +1,5 @@
 package servlet
 
-
 const (
 	// LogFormatterFormatJSON defines the value to be used to declare a JSON
 	// log formatter format.

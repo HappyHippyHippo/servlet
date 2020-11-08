@@ -7,7 +7,7 @@ import (
 )
 
 func Test_NewConfigSourceEnvironment(t *testing.T) {
-	t.Run("with empty mapping", func(t *testing.T) {
+	t.Run("with empty mappings", func(t *testing.T) {
 		if source, err := NewConfigSourceEnvironment(map[string]string{}); source == nil {
 			t.Errorf("didn't returned a valid reference")
 		} else {
@@ -22,16 +22,16 @@ func Test_NewConfigSourceEnvironment(t *testing.T) {
 		}
 	})
 
-	t.Run("with root mapping", func(t *testing.T) {
+	t.Run("with root mappings", func(t *testing.T) {
 		env := "env"
 		value := "value"
-		mapping := map[string]string{env: "id"}
+		mappings := map[string]string{env: "id"}
 		expected := ConfigPartial{"id": value}
 
 		_ = os.Setenv(env, value)
 		defer func() { _ = os.Setenv(env, "") }()
 
-		if source, err := NewConfigSourceEnvironment(mapping); source == nil {
+		if source, err := NewConfigSourceEnvironment(mappings); source == nil {
 			t.Errorf("didn't returned a valid reference")
 		} else {
 			defer source.Close()
@@ -45,16 +45,16 @@ func Test_NewConfigSourceEnvironment(t *testing.T) {
 		}
 	})
 
-	t.Run("with multi-level mapping", func(t *testing.T) {
+	t.Run("with multi-level mappings", func(t *testing.T) {
 		env := "env"
 		value := "value"
-		mapping := map[string]string{env: "root.node"}
+		mappings := map[string]string{env: "root.node"}
 		expected := ConfigPartial{"root": ConfigPartial{"node": value}}
 
 		_ = os.Setenv(env, value)
 		defer func() { _ = os.Setenv(env, "") }()
 
-		if source, err := NewConfigSourceEnvironment(mapping); source == nil {
+		if source, err := NewConfigSourceEnvironment(mappings); source == nil {
 			t.Errorf("didn't returned a valid reference")
 		} else {
 			defer source.Close()
@@ -69,7 +69,7 @@ func Test_NewConfigSourceEnvironment(t *testing.T) {
 	})
 
 	t.Run("with multi-level mapping and node override", func(t *testing.T) {
-		mapping := map[string]string{
+		mappings := map[string]string{
 			"env1": "root",
 			"env2": "root.node",
 		}
@@ -80,7 +80,7 @@ func Test_NewConfigSourceEnvironment(t *testing.T) {
 		_ = os.Setenv("env2", "value2")
 		defer func() { _ = os.Setenv("env1", ""); _ = os.Setenv("env2", "") }()
 
-		if source, err := NewConfigSourceEnvironment(mapping); source == nil {
+		if source, err := NewConfigSourceEnvironment(mappings); source == nil {
 			t.Errorf("didn't returned a valid reference")
 		} else {
 			defer source.Close()

@@ -56,10 +56,10 @@ func Test_ConfigSourceFactoryStrategyEnvironment_Accept(t *testing.T) {
 		}
 
 		for _, scn := range scenarios {
-			mapping := map[string]string{}
+			mappings := map[string]string{}
 
 			strategy, _ := NewConfigSourceFactoryStrategyEnvironment()
-			if check := strategy.Accept(scn.sourceType, mapping); check != scn.expected {
+			if check := strategy.Accept(scn.sourceType, mappings); check != scn.expected {
 				t.Errorf("for the type (%s), returned (%v)", scn.sourceType, check)
 			}
 		}
@@ -85,7 +85,7 @@ func Test_ConfigSourceFactoryStrategyEnvironment_AcceptConfig(t *testing.T) {
 		}
 	})
 
-	t.Run("don't accept if mapping is missing", func(t *testing.T) {
+	t.Run("don't accept if mappings is missing", func(t *testing.T) {
 		sourceType := ConfigSourceTypeEnv
 
 		strategy, _ := NewConfigSourceFactoryStrategyEnvironment()
@@ -96,35 +96,36 @@ func Test_ConfigSourceFactoryStrategyEnvironment_AcceptConfig(t *testing.T) {
 		}
 	})
 
-	t.Run("don't accept if mapping is not a string", func(t *testing.T) {
+	t.Run("don't accept if mappings is not a string", func(t *testing.T) {
 		sourceType := ConfigSourceTypeEnv
 
 		strategy, _ := NewConfigSourceFactoryStrategyEnvironment()
 
-		partial := ConfigPartial{"type": sourceType, "mapping": 123}
+		partial := ConfigPartial{"type": sourceType, "mappings": 123}
 		if strategy.AcceptConfig(partial) {
 			t.Error("returned true")
 		}
 	})
 
 	t.Run("don't accept if invalid type", func(t *testing.T) {
-		mapping := map[string]string{}
+		mappings := map[string]string{}
 
 		strategy, _ := NewConfigSourceFactoryStrategyEnvironment()
 
-		partial := ConfigPartial{"type": ConfigSourceTypeFile, "mapping": mapping}
+		partial := ConfigPartial{"type": ConfigSourceTypeFile, "mappings": mappings}
 		if strategy.AcceptConfig(partial) {
 			t.Error("returned true")
 		}
 	})
 
 	t.Run("accept config", func(t *testing.T) {
+		env := "env"
+		path := "root"
 		sourceType := ConfigSourceTypeEnv
-		mapping := map[string]string{}
 
 		strategy, _ := NewConfigSourceFactoryStrategyEnvironment()
 
-		partial := ConfigPartial{"type": sourceType, "mapping": mapping}
+		partial := ConfigPartial{"type": sourceType, "mappings": ConfigPartial{env: path}}
 		if !strategy.AcceptConfig(partial) {
 			t.Error("returned false")
 		}
@@ -132,7 +133,7 @@ func Test_ConfigSourceFactoryStrategyEnvironment_AcceptConfig(t *testing.T) {
 }
 
 func Test_CConfigSourceFactoryStrategyEnvironment_Create(t *testing.T) {
-	t.Run("non-map mapping", func(t *testing.T) {
+	t.Run("non-map mappings", func(t *testing.T) {
 		strategy, _ := NewConfigSourceFactoryStrategyEnvironment()
 
 		if source, err := strategy.Create(123); source != nil {
@@ -148,7 +149,7 @@ func Test_CConfigSourceFactoryStrategyEnvironment_Create(t *testing.T) {
 		env := "env"
 		path := "root"
 		value := "value"
-		mapping := map[string]string{env: path}
+		mappings := map[string]string{env: path}
 		expected := ConfigPartial{path: value}
 
 		_ = os.Setenv(env, value)
@@ -156,7 +157,7 @@ func Test_CConfigSourceFactoryStrategyEnvironment_Create(t *testing.T) {
 
 		strategy, _ := NewConfigSourceFactoryStrategyEnvironment()
 
-		if source, err := strategy.Create(mapping); err != nil {
+		if source, err := strategy.Create(mappings); err != nil {
 			t.Errorf("returned the (%v) error", err)
 		} else if source == nil {
 			t.Error("didn't returned a valid reference")
@@ -174,10 +175,10 @@ func Test_CConfigSourceFactoryStrategyEnvironment_Create(t *testing.T) {
 }
 
 func Test_ConfigSourceFactoryStrategyEnvironment_CreateConfig(t *testing.T) {
-	t.Run("non-map mapping", func(t *testing.T) {
+	t.Run("non-map mappings", func(t *testing.T) {
 		strategy, _ := NewConfigSourceFactoryStrategyEnvironment()
 
-		conf := ConfigPartial{"mapping": 123}
+		conf := ConfigPartial{"mappings": 123}
 		if source, err := strategy.CreateConfig(conf); source != nil {
 			t.Error("returned a valid reference")
 		} else if err == nil {
@@ -198,7 +199,7 @@ func Test_ConfigSourceFactoryStrategyEnvironment_CreateConfig(t *testing.T) {
 
 		strategy, _ := NewConfigSourceFactoryStrategyEnvironment()
 
-		conf := ConfigPartial{"mapping": ConfigPartial{env: path}}
+		conf := ConfigPartial{"mappings": ConfigPartial{env: path}}
 
 		if source, err := strategy.CreateConfig(conf); err != nil {
 			t.Errorf("returned the (%v) error", err)

@@ -39,9 +39,12 @@ func (s ConfigSourceFactoryStrategyEnvironment) AcceptConfig(conf ConfigPartial)
 	}()
 
 	sourceType := conf.String("type")
-	mapping := conf.Get("mapping")
+	mappings := map[string]string{}
+	for k, v := range conf.Get("mappings").(ConfigPartial) {
+		mappings[k.(string)] = v.(string)
+	}
 
-	return s.Accept(sourceType, mapping)
+	return s.Accept(sourceType, mappings)
 }
 
 // Create will instantiate the desired environment source instance.
@@ -68,10 +71,10 @@ func (s ConfigSourceFactoryStrategyEnvironment) CreateConfig(conf ConfigPartial)
 		}
 	}()
 
-	mapping := map[string]string{}
-	for k, v := range conf.Get("mapping").(ConfigPartial) {
-		mapping[k.(string)] = v.(string)
+	mappings := map[string]string{}
+	for k, v := range conf.Get("mappings").(ConfigPartial) {
+		mappings[k.(string)] = v.(string)
 	}
 
-	return s.Create(mapping)
+	return s.Create(mappings)
 }

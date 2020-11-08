@@ -10,18 +10,18 @@ import (
 // stream configuration source.
 type ConfigSourceEnvironment struct {
 	ConfigSourceBase
-	mapper map[string]string
+	mappings map[string]string
 }
 
 // NewConfigSourceEnvironment instantiate a new source that read a list of
 // environment variables into mapped config paths.
-func NewConfigSourceEnvironment(mapper map[string]string) (*ConfigSourceEnvironment, error) {
+func NewConfigSourceEnvironment(mappings map[string]string) (*ConfigSourceEnvironment, error) {
 	s := &ConfigSourceEnvironment{
 		ConfigSourceBase: ConfigSourceBase{
 			mutex:   &sync.Mutex{},
 			partial: ConfigPartial{},
 		},
-		mapper: mapper,
+		mappings: mappings,
 	}
 
 	_ = s.load()
@@ -30,7 +30,7 @@ func NewConfigSourceEnvironment(mapper map[string]string) (*ConfigSourceEnvironm
 }
 
 func (s *ConfigSourceEnvironment) load() error {
-	for v, p := range s.mapper {
+	for v, p := range s.mappings {
 		if env := os.Getenv(v); env != "" {
 			step := s.partial
 			sections := strings.Split(p, ".")
