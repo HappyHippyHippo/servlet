@@ -192,10 +192,10 @@ func Test_Config_Get(t *testing.T) {
 			},
 		}
 
-		id := "source"
-		priority := 0
-
 		for _, scn := range scenarios {
+			id := "source"
+			priority := 0
+
 			ctrl := gomock.NewController(t)
 			defer ctrl.Finish()
 
@@ -258,7 +258,7 @@ func Test_Config_GetBool(t *testing.T) {
 		config.GetBool("path")
 	})
 
-	t.Run("return boolean value", func(t *testing.T) {
+	t.Run("return the stored boolean value", func(t *testing.T) {
 		id := "source"
 		priority := 0
 		search := "node"
@@ -279,11 +279,103 @@ func Test_Config_GetBool(t *testing.T) {
 		}
 	})
 
-	t.Run("panic if the stored value is not a bool", func(t *testing.T) {
+	t.Run("return the string conversion to boolean value", func(t *testing.T) {
+		scenarios := []struct {
+			value    interface{}
+			expected bool
+		}{
+			{
+				value:    "1",
+				expected: true,
+			},
+			{
+				value:    "t",
+				expected: true,
+			},
+			{
+				value:    "T",
+				expected: true,
+			},
+			{
+				value:    "TRUE",
+				expected: true,
+			},
+			{
+				value:    "True",
+				expected: true,
+			},
+			{
+				value:    "true",
+				expected: true,
+			},
+			{
+				value:    "0",
+				expected: false,
+			},
+			{
+				value:    "f",
+				expected: false,
+			},
+			{
+				value:    "F",
+				expected: false,
+			},
+			{
+				value:    "FALSE",
+				expected: false,
+			},
+			{
+				value:    "False",
+				expected: false,
+			},
+			{
+				value:    "false",
+				expected: false,
+			},
+		}
+
+		for _, scn := range scenarios {
+			id := "source"
+			priority := 0
+			search := "node"
+
+			ctrl := gomock.NewController(t)
+			defer ctrl.Finish()
+
+			config, _ := NewConfig(60 * time.Second)
+			defer config.Close()
+
+			source := NewMockConfigSource(ctrl)
+			source.EXPECT().Close().Times(1)
+			source.EXPECT().Get("").Return(ConfigPartial{search: scn.value}).Times(1)
+			_ = config.AddSource(id, priority, source)
+
+			if result := config.GetBool(search); result != scn.expected {
+				t.Errorf("returned (%v) expected (%v)", result, scn.expected)
+			}
+		}
+	})
+
+	t.Run("panic if the stored value is a string that cannot be converted to bool", func(t *testing.T) {
+		defer func() {
+			if r := recover(); r == nil {
+				t.Error("did not panic")
+			} else {
+				switch e := r.(type) {
+				case error:
+					if e.Error() != "strconv.ParseBool: parsing \"non boolean value\": invalid syntax" {
+						t.Errorf("panic with the (%v) error", e)
+					}
+				default:
+					t.Error("didn't panic with an error")
+				}
+			}
+		}()
+
 		id := "source"
 		priority := 0
 		search := "node"
-		invalidValue := "true"
+		invalidValue := "non boolean value"
 
 		ctrl := gomock.NewController(t)
 		defer ctrl.Finish()
@@ -296,16 +388,79 @@ func Test_Config_GetBool(t *testing.T) {
 		source.EXPECT().Get("").Return(ConfigPartial{search: invalidValue}).Times(1)
 		_ = config.AddSource(id, priority, source)
 
+		config.GetBool(search)
+	})
+
+	t.Run("panic if the stored value isn't a boolean nor a string", func(t *testing.T) {
 		defer func() {
 			if r := recover(); r == nil {
 				t.Error("did not panic")
+			} else {
+				switch e := r.(type) {
+				case error:
+					if e.Error() != "unable to convert (123) from path (node) into bool" {
+						t.Errorf("panic with the (%v) error", e)
+					}
+				default:
+					t.Error("didn't panic with an error")
+				}
 			}
 		}()
+
+		id := "source"
+		priority := 0
+		search := "node"
+		invalidValue := 123
+
+		ctrl := gomock.NewController(t)
+		defer ctrl.Finish()
+
+		config, _ := NewConfig(60 * time.Second)
+		defer config.Close()
+
+		source := NewMockConfigSource(ctrl)
+		source.EXPECT().Close().Times(1)
+		source.EXPECT().Get("").Return(ConfigPartial{search: invalidValue}).Times(1)
+		_ = config.AddSource(id, priority, source)
 
 		config.GetBool(search)
 	})
 
-	t.Run("return the default value", func(t *testing.T) {
+	t.Run("panic if the path doesn't exists and there was no default value given", func(t *testing.T) {
+		defer func() {
+			if r := recover(); r == nil {
+				t.Error("did not panic")
+			} else {
+				switch e := r.(type) {
+				case error:
+					if e.Error() != "path (node) not found" {
+						t.Errorf("panic with the (%v) error", e)
+					}
+				default:
+					t.Error("didn't panic with an error")
+				}
+			}
+		}()
+
+		id := "source"
+		priority := 0
+		search := "node"
+
+		ctrl := gomock.NewController(t)
+		defer ctrl.Finish()
+
+		config, _ := NewConfig(60 * time.Second)
+		defer config.Close()
+
+		source := NewMockConfigSource(ctrl)
+		source.EXPECT().Close().Times(1)
+		source.EXPECT().Get("").Return(ConfigPartial{}).Times(1)
+		_ = config.AddSource(id, priority, source)
+
+		config.GetBool(search)
+	})
+
+	t.Run("return the default value if path doesn't exists", func(t *testing.T) {
 		id := "source"
 		priority := 0
 		search := "node"
@@ -370,11 +525,49 @@ func Test_Config_GetInt(t *testing.T) {
 		}
 	})
 
-	t.Run("panic if the stored value is not a int", func(t *testing.T) {
+	t.Run("return the string conversion to int value", func(t *testing.T) {
 		id := "source"
 		priority := 0
 		search := "node"
-		invalidValue := "123"
+		value := "123"
+		expected := 123
+
+		ctrl := gomock.NewController(t)
+		defer ctrl.Finish()
+
+		config, _ := NewConfig(60 * time.Second)
+		defer config.Close()
+
+		source := NewMockConfigSource(ctrl)
+		source.EXPECT().Close().Times(1)
+		source.EXPECT().Get("").Return(ConfigPartial{search: value}).Times(1)
+		_ = config.AddSource(id, priority, source)
+
+		if result := config.GetInt(search); result != expected {
+			t.Errorf("returned (%v) expected (%v)", result, expected)
+		}
+	})
+
+	t.Run("panic if the stored value is a string that cannot be converted to int", func(t *testing.T) {
+		defer func() {
+			if r := recover(); r == nil {
+				t.Error("did not panic")
+			} else {
+				switch e := r.(type) {
+				case error:
+					if e.Error() != "strconv.ParseInt: parsing \"non int value\": invalid syntax" {
+						t.Errorf("panic with the (%v) error", e)
+					}
+				default:
+					t.Error("didn't panic with an error")
+				}
+			}
+		}()
+
+		id := "source"
+		priority := 0
+		search := "node"
+		invalidValue := "non int value"
 
 		ctrl := gomock.NewController(t)
 		defer ctrl.Finish()
@@ -387,11 +580,74 @@ func Test_Config_GetInt(t *testing.T) {
 		source.EXPECT().Get("").Return(ConfigPartial{search: invalidValue}).Times(1)
 		_ = config.AddSource(id, priority, source)
 
+		config.GetInt(search)
+	})
+
+	t.Run("panic if the stored value isn't a int nor a string", func(t *testing.T) {
 		defer func() {
 			if r := recover(); r == nil {
 				t.Error("did not panic")
+			} else {
+				switch e := r.(type) {
+				case error:
+					if e.Error() != "unable to convert ([data]) from path (node) into int" {
+						t.Errorf("panic with the (%v) error", e)
+					}
+				default:
+					t.Error("didn't panic with an error")
+				}
 			}
 		}()
+
+		id := "source"
+		priority := 0
+		search := "node"
+		invalidValue := []string{"data"}
+
+		ctrl := gomock.NewController(t)
+		defer ctrl.Finish()
+
+		config, _ := NewConfig(60 * time.Second)
+		defer config.Close()
+
+		source := NewMockConfigSource(ctrl)
+		source.EXPECT().Close().Times(1)
+		source.EXPECT().Get("").Return(ConfigPartial{search: invalidValue}).Times(1)
+		_ = config.AddSource(id, priority, source)
+
+		config.GetInt(search)
+	})
+
+	t.Run("panic if the path doesn't exists and there was no default value given", func(t *testing.T) {
+		defer func() {
+			if r := recover(); r == nil {
+				t.Error("did not panic")
+			} else {
+				switch e := r.(type) {
+				case error:
+					if e.Error() != "path (node) not found" {
+						t.Errorf("panic with the (%v) error", e)
+					}
+				default:
+					t.Error("didn't panic with an error")
+				}
+			}
+		}()
+
+		id := "source"
+		priority := 0
+		search := "node"
+
+		ctrl := gomock.NewController(t)
+		defer ctrl.Finish()
+
+		config, _ := NewConfig(60 * time.Second)
+		defer config.Close()
+
+		source := NewMockConfigSource(ctrl)
+		source.EXPECT().Close().Times(1)
+		source.EXPECT().Get("").Return(ConfigPartial{}).Times(1)
+		_ = config.AddSource(id, priority, source)
 
 		config.GetInt(search)
 	})
@@ -462,11 +718,49 @@ func Test_Config_GetInt8(t *testing.T) {
 		}
 	})
 
-	t.Run("panic if the stored value is not a int8", func(t *testing.T) {
+	t.Run("return the string conversion to int8 value", func(t *testing.T) {
 		id := "source"
 		priority := 0
 		search := "node"
-		invalidValue := "123"
+		value := "123"
+		expected := int8(123)
+
+		ctrl := gomock.NewController(t)
+		defer ctrl.Finish()
+
+		config, _ := NewConfig(60 * time.Second)
+		defer config.Close()
+
+		source := NewMockConfigSource(ctrl)
+		source.EXPECT().Close().Times(1)
+		source.EXPECT().Get("").Return(ConfigPartial{search: value}).Times(1)
+		_ = config.AddSource(id, priority, source)
+
+		if result := config.GetInt8(search); result != expected {
+			t.Errorf("returned (%v) expected (%v)", result, expected)
+		}
+	})
+
+	t.Run("panic if the stored value is a string that cannot be converted to int8", func(t *testing.T) {
+		defer func() {
+			if r := recover(); r == nil {
+				t.Error("did not panic")
+			} else {
+				switch e := r.(type) {
+				case error:
+					if e.Error() != "strconv.ParseInt: parsing \"non int value\": invalid syntax" {
+						t.Errorf("panic with the (%v) error", e)
+					}
+				default:
+					t.Error("didn't panic with an error")
+				}
+			}
+		}()
+
+		id := "source"
+		priority := 0
+		search := "node"
+		invalidValue := "non int value"
 
 		ctrl := gomock.NewController(t)
 		defer ctrl.Finish()
@@ -479,11 +773,74 @@ func Test_Config_GetInt8(t *testing.T) {
 		source.EXPECT().Get("").Return(ConfigPartial{search: invalidValue}).Times(1)
 		_ = config.AddSource(id, priority, source)
 
+		config.GetInt8(search)
+	})
+
+	t.Run("panic if the stored value isn't a int8 nor a string", func(t *testing.T) {
 		defer func() {
 			if r := recover(); r == nil {
 				t.Error("did not panic")
+			} else {
+				switch e := r.(type) {
+				case error:
+					if e.Error() != "unable to convert ([data]) from path (node) into int8" {
+						t.Errorf("panic with the (%v) error", e)
+					}
+				default:
+					t.Error("didn't panic with an error")
+				}
 			}
 		}()
+
+		id := "source"
+		priority := 0
+		search := "node"
+		invalidValue := []string{"data"}
+
+		ctrl := gomock.NewController(t)
+		defer ctrl.Finish()
+
+		config, _ := NewConfig(60 * time.Second)
+		defer config.Close()
+
+		source := NewMockConfigSource(ctrl)
+		source.EXPECT().Close().Times(1)
+		source.EXPECT().Get("").Return(ConfigPartial{search: invalidValue}).Times(1)
+		_ = config.AddSource(id, priority, source)
+
+		config.GetInt8(search)
+	})
+
+	t.Run("panic if the path doesn't exists and there was no default value given", func(t *testing.T) {
+		defer func() {
+			if r := recover(); r == nil {
+				t.Error("did not panic")
+			} else {
+				switch e := r.(type) {
+				case error:
+					if e.Error() != "path (node) not found" {
+						t.Errorf("panic with the (%v) error", e)
+					}
+				default:
+					t.Error("didn't panic with an error")
+				}
+			}
+		}()
+
+		id := "source"
+		priority := 0
+		search := "node"
+
+		ctrl := gomock.NewController(t)
+		defer ctrl.Finish()
+
+		config, _ := NewConfig(60 * time.Second)
+		defer config.Close()
+
+		source := NewMockConfigSource(ctrl)
+		source.EXPECT().Close().Times(1)
+		source.EXPECT().Get("").Return(ConfigPartial{}).Times(1)
+		_ = config.AddSource(id, priority, source)
 
 		config.GetInt8(search)
 	})
@@ -554,11 +911,49 @@ func Test_Config_GetInt16(t *testing.T) {
 		}
 	})
 
-	t.Run("panic if the stored value is not a int16", func(t *testing.T) {
+	t.Run("return the string conversion to int16 value", func(t *testing.T) {
 		id := "source"
 		priority := 0
 		search := "node"
-		invalidValue := "123"
+		value := "123"
+		expected := int16(123)
+
+		ctrl := gomock.NewController(t)
+		defer ctrl.Finish()
+
+		config, _ := NewConfig(60 * time.Second)
+		defer config.Close()
+
+		source := NewMockConfigSource(ctrl)
+		source.EXPECT().Close().Times(1)
+		source.EXPECT().Get("").Return(ConfigPartial{search: value}).Times(1)
+		_ = config.AddSource(id, priority, source)
+
+		if result := config.GetInt16(search); result != expected {
+			t.Errorf("returned (%v) expected (%v)", result, expected)
+		}
+	})
+
+	t.Run("panic if the stored value is a string that cannot be converted to int16", func(t *testing.T) {
+		defer func() {
+			if r := recover(); r == nil {
+				t.Error("did not panic")
+			} else {
+				switch e := r.(type) {
+				case error:
+					if e.Error() != "strconv.ParseInt: parsing \"non int value\": invalid syntax" {
+						t.Errorf("panic with the (%v) error", e)
+					}
+				default:
+					t.Error("didn't panic with an error")
+				}
+			}
+		}()
+
+		id := "source"
+		priority := 0
+		search := "node"
+		invalidValue := "non int value"
 
 		ctrl := gomock.NewController(t)
 		defer ctrl.Finish()
@@ -571,11 +966,74 @@ func Test_Config_GetInt16(t *testing.T) {
 		source.EXPECT().Get("").Return(ConfigPartial{search: invalidValue}).Times(1)
 		_ = config.AddSource(id, priority, source)
 
+		config.GetInt16(search)
+	})
+
+	t.Run("panic if the stored value isn't a int16 nor a string", func(t *testing.T) {
 		defer func() {
 			if r := recover(); r == nil {
 				t.Error("did not panic")
+			} else {
+				switch e := r.(type) {
+				case error:
+					if e.Error() != "unable to convert ([data]) from path (node) into int16" {
+						t.Errorf("panic with the (%v) error", e)
+					}
+				default:
+					t.Error("didn't panic with an error")
+				}
 			}
 		}()
+
+		id := "source"
+		priority := 0
+		search := "node"
+		invalidValue := []string{"data"}
+
+		ctrl := gomock.NewController(t)
+		defer ctrl.Finish()
+
+		config, _ := NewConfig(60 * time.Second)
+		defer config.Close()
+
+		source := NewMockConfigSource(ctrl)
+		source.EXPECT().Close().Times(1)
+		source.EXPECT().Get("").Return(ConfigPartial{search: invalidValue}).Times(1)
+		_ = config.AddSource(id, priority, source)
+
+		config.GetInt16(search)
+	})
+
+	t.Run("panic if the path doesn't exists and there was no default value given", func(t *testing.T) {
+		defer func() {
+			if r := recover(); r == nil {
+				t.Error("did not panic")
+			} else {
+				switch e := r.(type) {
+				case error:
+					if e.Error() != "path (node) not found" {
+						t.Errorf("panic with the (%v) error", e)
+					}
+				default:
+					t.Error("didn't panic with an error")
+				}
+			}
+		}()
+
+		id := "source"
+		priority := 0
+		search := "node"
+
+		ctrl := gomock.NewController(t)
+		defer ctrl.Finish()
+
+		config, _ := NewConfig(60 * time.Second)
+		defer config.Close()
+
+		source := NewMockConfigSource(ctrl)
+		source.EXPECT().Close().Times(1)
+		source.EXPECT().Get("").Return(ConfigPartial{}).Times(1)
+		_ = config.AddSource(id, priority, source)
 
 		config.GetInt16(search)
 	})
@@ -646,11 +1104,49 @@ func Test_Config_GetInt32(t *testing.T) {
 		}
 	})
 
-	t.Run("panic if the stored value is not a int32", func(t *testing.T) {
+	t.Run("return the string conversion to int32 value", func(t *testing.T) {
 		id := "source"
 		priority := 0
 		search := "node"
-		invalidValue := "123"
+		value := "123"
+		expected := int32(123)
+
+		ctrl := gomock.NewController(t)
+		defer ctrl.Finish()
+
+		config, _ := NewConfig(60 * time.Second)
+		defer config.Close()
+
+		source := NewMockConfigSource(ctrl)
+		source.EXPECT().Close().Times(1)
+		source.EXPECT().Get("").Return(ConfigPartial{search: value}).Times(1)
+		_ = config.AddSource(id, priority, source)
+
+		if result := config.GetInt32(search); result != expected {
+			t.Errorf("returned (%v) expected (%v)", result, expected)
+		}
+	})
+
+	t.Run("panic if the stored value is a string that cannot be converted to int32", func(t *testing.T) {
+		defer func() {
+			if r := recover(); r == nil {
+				t.Error("did not panic")
+			} else {
+				switch e := r.(type) {
+				case error:
+					if e.Error() != "strconv.ParseInt: parsing \"non int value\": invalid syntax" {
+						t.Errorf("panic with the (%v) error", e)
+					}
+				default:
+					t.Error("didn't panic with an error")
+				}
+			}
+		}()
+
+		id := "source"
+		priority := 0
+		search := "node"
+		invalidValue := "non int value"
 
 		ctrl := gomock.NewController(t)
 		defer ctrl.Finish()
@@ -663,11 +1159,74 @@ func Test_Config_GetInt32(t *testing.T) {
 		source.EXPECT().Get("").Return(ConfigPartial{search: invalidValue}).Times(1)
 		_ = config.AddSource(id, priority, source)
 
+		config.GetInt32(search)
+	})
+
+	t.Run("panic if the stored value isn't a int32 nor a string", func(t *testing.T) {
 		defer func() {
 			if r := recover(); r == nil {
 				t.Error("did not panic")
+			} else {
+				switch e := r.(type) {
+				case error:
+					if e.Error() != "unable to convert ([data]) from path (node) into int32" {
+						t.Errorf("panic with the (%v) error", e)
+					}
+				default:
+					t.Error("didn't panic with an error")
+				}
 			}
 		}()
+
+		id := "source"
+		priority := 0
+		search := "node"
+		invalidValue := []string{"data"}
+
+		ctrl := gomock.NewController(t)
+		defer ctrl.Finish()
+
+		config, _ := NewConfig(60 * time.Second)
+		defer config.Close()
+
+		source := NewMockConfigSource(ctrl)
+		source.EXPECT().Close().Times(1)
+		source.EXPECT().Get("").Return(ConfigPartial{search: invalidValue}).Times(1)
+		_ = config.AddSource(id, priority, source)
+
+		config.GetInt32(search)
+	})
+
+	t.Run("panic if the path doesn't exists and there was no default value given", func(t *testing.T) {
+		defer func() {
+			if r := recover(); r == nil {
+				t.Error("did not panic")
+			} else {
+				switch e := r.(type) {
+				case error:
+					if e.Error() != "path (node) not found" {
+						t.Errorf("panic with the (%v) error", e)
+					}
+				default:
+					t.Error("didn't panic with an error")
+				}
+			}
+		}()
+
+		id := "source"
+		priority := 0
+		search := "node"
+
+		ctrl := gomock.NewController(t)
+		defer ctrl.Finish()
+
+		config, _ := NewConfig(60 * time.Second)
+		defer config.Close()
+
+		source := NewMockConfigSource(ctrl)
+		source.EXPECT().Close().Times(1)
+		source.EXPECT().Get("").Return(ConfigPartial{}).Times(1)
+		_ = config.AddSource(id, priority, source)
 
 		config.GetInt32(search)
 	})
@@ -738,11 +1297,49 @@ func Test_Config_GetInt64(t *testing.T) {
 		}
 	})
 
-	t.Run("panic if the stored value is not a int64", func(t *testing.T) {
+	t.Run("return the string conversion to int64 value", func(t *testing.T) {
 		id := "source"
 		priority := 0
 		search := "node"
-		invalidValue := "123"
+		value := "123"
+		expected := int64(123)
+
+		ctrl := gomock.NewController(t)
+		defer ctrl.Finish()
+
+		config, _ := NewConfig(60 * time.Second)
+		defer config.Close()
+
+		source := NewMockConfigSource(ctrl)
+		source.EXPECT().Close().Times(1)
+		source.EXPECT().Get("").Return(ConfigPartial{search: value}).Times(1)
+		_ = config.AddSource(id, priority, source)
+
+		if result := config.GetInt64(search); result != expected {
+			t.Errorf("returned (%v) expected (%v)", result, expected)
+		}
+	})
+
+	t.Run("panic if the stored value is a string that cannot be converted to int64", func(t *testing.T) {
+		defer func() {
+			if r := recover(); r == nil {
+				t.Error("did not panic")
+			} else {
+				switch e := r.(type) {
+				case error:
+					if e.Error() != "strconv.ParseInt: parsing \"non int value\": invalid syntax" {
+						t.Errorf("panic with the (%v) error", e)
+					}
+				default:
+					t.Error("didn't panic with an error")
+				}
+			}
+		}()
+
+		id := "source"
+		priority := 0
+		search := "node"
+		invalidValue := "non int value"
 
 		ctrl := gomock.NewController(t)
 		defer ctrl.Finish()
@@ -755,11 +1352,74 @@ func Test_Config_GetInt64(t *testing.T) {
 		source.EXPECT().Get("").Return(ConfigPartial{search: invalidValue}).Times(1)
 		_ = config.AddSource(id, priority, source)
 
+		config.GetInt64(search)
+	})
+
+	t.Run("panic if the stored value isn't a int64 nor a string", func(t *testing.T) {
 		defer func() {
 			if r := recover(); r == nil {
 				t.Error("did not panic")
+			} else {
+				switch e := r.(type) {
+				case error:
+					if e.Error() != "unable to convert ([data]) from path (node) into int64" {
+						t.Errorf("panic with the (%v) error", e)
+					}
+				default:
+					t.Error("didn't panic with an error")
+				}
 			}
 		}()
+
+		id := "source"
+		priority := 0
+		search := "node"
+		invalidValue := []string{"data"}
+
+		ctrl := gomock.NewController(t)
+		defer ctrl.Finish()
+
+		config, _ := NewConfig(60 * time.Second)
+		defer config.Close()
+
+		source := NewMockConfigSource(ctrl)
+		source.EXPECT().Close().Times(1)
+		source.EXPECT().Get("").Return(ConfigPartial{search: invalidValue}).Times(1)
+		_ = config.AddSource(id, priority, source)
+
+		config.GetInt64(search)
+	})
+
+	t.Run("panic if the path doesn't exists and there was no default value given", func(t *testing.T) {
+		defer func() {
+			if r := recover(); r == nil {
+				t.Error("did not panic")
+			} else {
+				switch e := r.(type) {
+				case error:
+					if e.Error() != "path (node) not found" {
+						t.Errorf("panic with the (%v) error", e)
+					}
+				default:
+					t.Error("didn't panic with an error")
+				}
+			}
+		}()
+
+		id := "source"
+		priority := 0
+		search := "node"
+
+		ctrl := gomock.NewController(t)
+		defer ctrl.Finish()
+
+		config, _ := NewConfig(60 * time.Second)
+		defer config.Close()
+
+		source := NewMockConfigSource(ctrl)
+		source.EXPECT().Close().Times(1)
+		source.EXPECT().Get("").Return(ConfigPartial{}).Times(1)
+		_ = config.AddSource(id, priority, source)
 
 		config.GetInt64(search)
 	})
@@ -830,11 +1490,49 @@ func Test_Config_GetUInt(t *testing.T) {
 		}
 	})
 
-	t.Run("panic if the stored value is not a uint", func(t *testing.T) {
+	t.Run("return the string conversion to uint value", func(t *testing.T) {
 		id := "source"
 		priority := 0
 		search := "node"
-		invalidValue := "123"
+		value := "123"
+		expected := uint(123)
+
+		ctrl := gomock.NewController(t)
+		defer ctrl.Finish()
+
+		config, _ := NewConfig(60 * time.Second)
+		defer config.Close()
+
+		source := NewMockConfigSource(ctrl)
+		source.EXPECT().Close().Times(1)
+		source.EXPECT().Get("").Return(ConfigPartial{search: value}).Times(1)
+		_ = config.AddSource(id, priority, source)
+
+		if result := config.GetUInt(search); result != expected {
+			t.Errorf("returned (%v) expected (%v)", result, expected)
+		}
+	})
+
+	t.Run("panic if the stored value is a string that cannot be converted to uint", func(t *testing.T) {
+		defer func() {
+			if r := recover(); r == nil {
+				t.Error("did not panic")
+			} else {
+				switch e := r.(type) {
+				case error:
+					if e.Error() != "strconv.ParseUint: parsing \"non int value\": invalid syntax" {
+						t.Errorf("panic with the (%v) error", e)
+					}
+				default:
+					t.Error("didn't panic with an error")
+				}
+			}
+		}()
+
+		id := "source"
+		priority := 0
+		search := "node"
+		invalidValue := "non int value"
 
 		ctrl := gomock.NewController(t)
 		defer ctrl.Finish()
@@ -847,11 +1545,74 @@ func Test_Config_GetUInt(t *testing.T) {
 		source.EXPECT().Get("").Return(ConfigPartial{search: invalidValue}).Times(1)
 		_ = config.AddSource(id, priority, source)
 
+		config.GetUInt(search)
+	})
+
+	t.Run("panic if the stored value isn't a uint nor a string", func(t *testing.T) {
 		defer func() {
 			if r := recover(); r == nil {
 				t.Error("did not panic")
+			} else {
+				switch e := r.(type) {
+				case error:
+					if e.Error() != "unable to convert ([data]) from path (node) into uint" {
+						t.Errorf("panic with the (%v) error", e)
+					}
+				default:
+					t.Error("didn't panic with an error")
+				}
 			}
 		}()
+
+		id := "source"
+		priority := 0
+		search := "node"
+		invalidValue := []string{"data"}
+
+		ctrl := gomock.NewController(t)
+		defer ctrl.Finish()
+
+		config, _ := NewConfig(60 * time.Second)
+		defer config.Close()
+
+		source := NewMockConfigSource(ctrl)
+		source.EXPECT().Close().Times(1)
+		source.EXPECT().Get("").Return(ConfigPartial{search: invalidValue}).Times(1)
+		_ = config.AddSource(id, priority, source)
+
+		config.GetUInt(search)
+	})
+
+	t.Run("panic if the path doesn't exists and there was no default value given", func(t *testing.T) {
+		defer func() {
+			if r := recover(); r == nil {
+				t.Error("did not panic")
+			} else {
+				switch e := r.(type) {
+				case error:
+					if e.Error() != "path (node) not found" {
+						t.Errorf("panic with the (%v) error", e)
+					}
+				default:
+					t.Error("didn't panic with an error")
+				}
+			}
+		}()
+
+		id := "source"
+		priority := 0
+		search := "node"
+
+		ctrl := gomock.NewController(t)
+		defer ctrl.Finish()
+
+		config, _ := NewConfig(60 * time.Second)
+		defer config.Close()
+
+		source := NewMockConfigSource(ctrl)
+		source.EXPECT().Close().Times(1)
+		source.EXPECT().Get("").Return(ConfigPartial{}).Times(1)
+		_ = config.AddSource(id, priority, source)
 
 		config.GetUInt(search)
 	})
@@ -922,11 +1683,49 @@ func Test_Config_GetUInt8(t *testing.T) {
 		}
 	})
 
-	t.Run("panic if the stored value is not a uint8", func(t *testing.T) {
+	t.Run("return the string conversion to uint8 value", func(t *testing.T) {
 		id := "source"
 		priority := 0
 		search := "node"
-		invalidValue := "123"
+		value := "123"
+		expected := uint8(123)
+
+		ctrl := gomock.NewController(t)
+		defer ctrl.Finish()
+
+		config, _ := NewConfig(60 * time.Second)
+		defer config.Close()
+
+		source := NewMockConfigSource(ctrl)
+		source.EXPECT().Close().Times(1)
+		source.EXPECT().Get("").Return(ConfigPartial{search: value}).Times(1)
+		_ = config.AddSource(id, priority, source)
+
+		if result := config.GetUInt8(search); result != expected {
+			t.Errorf("returned (%v) expected (%v)", result, expected)
+		}
+	})
+
+	t.Run("panic if the stored value is a string that cannot be converted to uint8", func(t *testing.T) {
+		defer func() {
+			if r := recover(); r == nil {
+				t.Error("did not panic")
+			} else {
+				switch e := r.(type) {
+				case error:
+					if e.Error() != "strconv.ParseUint: parsing \"non int value\": invalid syntax" {
+						t.Errorf("panic with the (%v) error", e)
+					}
+				default:
+					t.Error("didn't panic with an error")
+				}
+			}
+		}()
+
+		id := "source"
+		priority := 0
+		search := "node"
+		invalidValue := "non int value"
 
 		ctrl := gomock.NewController(t)
 		defer ctrl.Finish()
@@ -939,11 +1738,74 @@ func Test_Config_GetUInt8(t *testing.T) {
 		source.EXPECT().Get("").Return(ConfigPartial{search: invalidValue}).Times(1)
 		_ = config.AddSource(id, priority, source)
 
+		config.GetUInt8(search)
+	})
+
+	t.Run("panic if the stored value isn't a uint8 nor a string", func(t *testing.T) {
 		defer func() {
 			if r := recover(); r == nil {
 				t.Error("did not panic")
+			} else {
+				switch e := r.(type) {
+				case error:
+					if e.Error() != "unable to convert ([data]) from path (node) into uint8" {
+						t.Errorf("panic with the (%v) error", e)
+					}
+				default:
+					t.Error("didn't panic with an error")
+				}
 			}
 		}()
+
+		id := "source"
+		priority := 0
+		search := "node"
+		invalidValue := []string{"data"}
+
+		ctrl := gomock.NewController(t)
+		defer ctrl.Finish()
+
+		config, _ := NewConfig(60 * time.Second)
+		defer config.Close()
+
+		source := NewMockConfigSource(ctrl)
+		source.EXPECT().Close().Times(1)
+		source.EXPECT().Get("").Return(ConfigPartial{search: invalidValue}).Times(1)
+		_ = config.AddSource(id, priority, source)
+
+		config.GetUInt8(search)
+	})
+
+	t.Run("panic if the path doesn't exists and there was no default value given", func(t *testing.T) {
+		defer func() {
+			if r := recover(); r == nil {
+				t.Error("did not panic")
+			} else {
+				switch e := r.(type) {
+				case error:
+					if e.Error() != "path (node) not found" {
+						t.Errorf("panic with the (%v) error", e)
+					}
+				default:
+					t.Error("didn't panic with an error")
+				}
+			}
+		}()
+
+		id := "source"
+		priority := 0
+		search := "node"
+
+		ctrl := gomock.NewController(t)
+		defer ctrl.Finish()
+
+		config, _ := NewConfig(60 * time.Second)
+		defer config.Close()
+
+		source := NewMockConfigSource(ctrl)
+		source.EXPECT().Close().Times(1)
+		source.EXPECT().Get("").Return(ConfigPartial{}).Times(1)
+		_ = config.AddSource(id, priority, source)
 
 		config.GetUInt8(search)
 	})
@@ -1014,11 +1876,49 @@ func Test_Config_GetUInt16(t *testing.T) {
 		}
 	})
 
-	t.Run("panic if the stored value is not a uint16", func(t *testing.T) {
+	t.Run("return the string conversion to uint16 value", func(t *testing.T) {
 		id := "source"
 		priority := 0
 		search := "node"
-		invalidValue := "123"
+		value := "123"
+		expected := uint16(123)
+
+		ctrl := gomock.NewController(t)
+		defer ctrl.Finish()
+
+		config, _ := NewConfig(60 * time.Second)
+		defer config.Close()
+
+		source := NewMockConfigSource(ctrl)
+		source.EXPECT().Close().Times(1)
+		source.EXPECT().Get("").Return(ConfigPartial{search: value}).Times(1)
+		_ = config.AddSource(id, priority, source)
+
+		if result := config.GetUInt16(search); result != expected {
+			t.Errorf("returned (%v) expected (%v)", result, expected)
+		}
+	})
+
+	t.Run("panic if the stored value is a string that cannot be converted to uint16", func(t *testing.T) {
+		defer func() {
+			if r := recover(); r == nil {
+				t.Error("did not panic")
+			} else {
+				switch e := r.(type) {
+				case error:
+					if e.Error() != "strconv.ParseUint: parsing \"non int value\": invalid syntax" {
+						t.Errorf("panic with the (%v) error", e)
+					}
+				default:
+					t.Error("didn't panic with an error")
+				}
+			}
+		}()
+
+		id := "source"
+		priority := 0
+		search := "node"
+		invalidValue := "non int value"
 
 		ctrl := gomock.NewController(t)
 		defer ctrl.Finish()
@@ -1031,11 +1931,74 @@ func Test_Config_GetUInt16(t *testing.T) {
 		source.EXPECT().Get("").Return(ConfigPartial{search: invalidValue}).Times(1)
 		_ = config.AddSource(id, priority, source)
 
+		config.GetUInt16(search)
+	})
+
+	t.Run("panic if the stored value isn't a uint16 nor a string", func(t *testing.T) {
 		defer func() {
 			if r := recover(); r == nil {
 				t.Error("did not panic")
+			} else {
+				switch e := r.(type) {
+				case error:
+					if e.Error() != "unable to convert ([data]) from path (node) into uint16" {
+						t.Errorf("panic with the (%v) error", e)
+					}
+				default:
+					t.Error("didn't panic with an error")
+				}
 			}
 		}()
+
+		id := "source"
+		priority := 0
+		search := "node"
+		invalidValue := []string{"data"}
+
+		ctrl := gomock.NewController(t)
+		defer ctrl.Finish()
+
+		config, _ := NewConfig(60 * time.Second)
+		defer config.Close()
+
+		source := NewMockConfigSource(ctrl)
+		source.EXPECT().Close().Times(1)
+		source.EXPECT().Get("").Return(ConfigPartial{search: invalidValue}).Times(1)
+		_ = config.AddSource(id, priority, source)
+
+		config.GetUInt16(search)
+	})
+
+	t.Run("panic if the path doesn't exists and there was no default value given", func(t *testing.T) {
+		defer func() {
+			if r := recover(); r == nil {
+				t.Error("did not panic")
+			} else {
+				switch e := r.(type) {
+				case error:
+					if e.Error() != "path (node) not found" {
+						t.Errorf("panic with the (%v) error", e)
+					}
+				default:
+					t.Error("didn't panic with an error")
+				}
+			}
+		}()
+
+		id := "source"
+		priority := 0
+		search := "node"
+
+		ctrl := gomock.NewController(t)
+		defer ctrl.Finish()
+
+		config, _ := NewConfig(60 * time.Second)
+		defer config.Close()
+
+		source := NewMockConfigSource(ctrl)
+		source.EXPECT().Close().Times(1)
+		source.EXPECT().Get("").Return(ConfigPartial{}).Times(1)
+		_ = config.AddSource(id, priority, source)
 
 		config.GetUInt16(search)
 	})
@@ -1106,11 +2069,49 @@ func Test_Config_GetUInt32(t *testing.T) {
 		}
 	})
 
-	t.Run("panic if the stored value is not a uint32", func(t *testing.T) {
+	t.Run("return the string conversion to uint32 value", func(t *testing.T) {
 		id := "source"
 		priority := 0
 		search := "node"
-		invalidValue := "123"
+		value := "123"
+		expected := uint32(123)
+
+		ctrl := gomock.NewController(t)
+		defer ctrl.Finish()
+
+		config, _ := NewConfig(60 * time.Second)
+		defer config.Close()
+
+		source := NewMockConfigSource(ctrl)
+		source.EXPECT().Close().Times(1)
+		source.EXPECT().Get("").Return(ConfigPartial{search: value}).Times(1)
+		_ = config.AddSource(id, priority, source)
+
+		if result := config.GetUInt32(search); result != expected {
+			t.Errorf("returned (%v) expected (%v)", result, expected)
+		}
+	})
+
+	t.Run("panic if the stored value is a string that cannot be converted to uint32", func(t *testing.T) {
+		defer func() {
+			if r := recover(); r == nil {
+				t.Error("did not panic")
+			} else {
+				switch e := r.(type) {
+				case error:
+					if e.Error() != "strconv.ParseUint: parsing \"non int value\": invalid syntax" {
+						t.Errorf("panic with the (%v) error", e)
+					}
+				default:
+					t.Error("didn't panic with an error")
+				}
+			}
+		}()
+
+		id := "source"
+		priority := 0
+		search := "node"
+		invalidValue := "non int value"
 
 		ctrl := gomock.NewController(t)
 		defer ctrl.Finish()
@@ -1123,11 +2124,74 @@ func Test_Config_GetUInt32(t *testing.T) {
 		source.EXPECT().Get("").Return(ConfigPartial{search: invalidValue}).Times(1)
 		_ = config.AddSource(id, priority, source)
 
+		config.GetUInt32(search)
+	})
+
+	t.Run("panic if the stored value isn't a uint32 nor a string", func(t *testing.T) {
 		defer func() {
 			if r := recover(); r == nil {
 				t.Error("did not panic")
+			} else {
+				switch e := r.(type) {
+				case error:
+					if e.Error() != "unable to convert ([data]) from path (node) into uint32" {
+						t.Errorf("panic with the (%v) error", e)
+					}
+				default:
+					t.Error("didn't panic with an error")
+				}
 			}
 		}()
+
+		id := "source"
+		priority := 0
+		search := "node"
+		invalidValue := []string{"data"}
+
+		ctrl := gomock.NewController(t)
+		defer ctrl.Finish()
+
+		config, _ := NewConfig(60 * time.Second)
+		defer config.Close()
+
+		source := NewMockConfigSource(ctrl)
+		source.EXPECT().Close().Times(1)
+		source.EXPECT().Get("").Return(ConfigPartial{search: invalidValue}).Times(1)
+		_ = config.AddSource(id, priority, source)
+
+		config.GetUInt32(search)
+	})
+
+	t.Run("panic if the path doesn't exists and there was no default value given", func(t *testing.T) {
+		defer func() {
+			if r := recover(); r == nil {
+				t.Error("did not panic")
+			} else {
+				switch e := r.(type) {
+				case error:
+					if e.Error() != "path (node) not found" {
+						t.Errorf("panic with the (%v) error", e)
+					}
+				default:
+					t.Error("didn't panic with an error")
+				}
+			}
+		}()
+
+		id := "source"
+		priority := 0
+		search := "node"
+
+		ctrl := gomock.NewController(t)
+		defer ctrl.Finish()
+
+		config, _ := NewConfig(60 * time.Second)
+		defer config.Close()
+
+		source := NewMockConfigSource(ctrl)
+		source.EXPECT().Close().Times(1)
+		source.EXPECT().Get("").Return(ConfigPartial{}).Times(1)
+		_ = config.AddSource(id, priority, source)
 
 		config.GetUInt32(search)
 	})
@@ -1198,11 +2262,49 @@ func Test_Config_GetUInt64(t *testing.T) {
 		}
 	})
 
-	t.Run("panic if the stored value is not a uint64", func(t *testing.T) {
+	t.Run("return the string conversion to uint64 value", func(t *testing.T) {
 		id := "source"
 		priority := 0
 		search := "node"
-		invalidValue := "123"
+		value := "123"
+		expected := uint64(123)
+
+		ctrl := gomock.NewController(t)
+		defer ctrl.Finish()
+
+		config, _ := NewConfig(60 * time.Second)
+		defer config.Close()
+
+		source := NewMockConfigSource(ctrl)
+		source.EXPECT().Close().Times(1)
+		source.EXPECT().Get("").Return(ConfigPartial{search: value}).Times(1)
+		_ = config.AddSource(id, priority, source)
+
+		if result := config.GetUInt64(search); result != expected {
+			t.Errorf("returned (%v) expected (%v)", result, expected)
+		}
+	})
+
+	t.Run("panic if the stored value is a string that cannot be converted to uint64", func(t *testing.T) {
+		defer func() {
+			if r := recover(); r == nil {
+				t.Error("did not panic")
+			} else {
+				switch e := r.(type) {
+				case error:
+					if e.Error() != "strconv.ParseUint: parsing \"non int value\": invalid syntax" {
+						t.Errorf("panic with the (%v) error", e)
+					}
+				default:
+					t.Error("didn't panic with an error")
+				}
+			}
+		}()
+
+		id := "source"
+		priority := 0
+		search := "node"
+		invalidValue := "non int value"
 
 		ctrl := gomock.NewController(t)
 		defer ctrl.Finish()
@@ -1215,11 +2317,74 @@ func Test_Config_GetUInt64(t *testing.T) {
 		source.EXPECT().Get("").Return(ConfigPartial{search: invalidValue}).Times(1)
 		_ = config.AddSource(id, priority, source)
 
+		config.GetUInt64(search)
+	})
+
+	t.Run("panic if the stored value isn't a uint32 nor a string", func(t *testing.T) {
 		defer func() {
 			if r := recover(); r == nil {
 				t.Error("did not panic")
+			} else {
+				switch e := r.(type) {
+				case error:
+					if e.Error() != "unable to convert ([data]) from path (node) into uint64" {
+						t.Errorf("panic with the (%v) error", e)
+					}
+				default:
+					t.Error("didn't panic with an error")
+				}
 			}
 		}()
+
+		id := "source"
+		priority := 0
+		search := "node"
+		invalidValue := []string{"data"}
+
+		ctrl := gomock.NewController(t)
+		defer ctrl.Finish()
+
+		config, _ := NewConfig(60 * time.Second)
+		defer config.Close()
+
+		source := NewMockConfigSource(ctrl)
+		source.EXPECT().Close().Times(1)
+		source.EXPECT().Get("").Return(ConfigPartial{search: invalidValue}).Times(1)
+		_ = config.AddSource(id, priority, source)
+
+		config.GetUInt64(search)
+	})
+
+	t.Run("panic if the path doesn't exists and there was no default value given", func(t *testing.T) {
+		defer func() {
+			if r := recover(); r == nil {
+				t.Error("did not panic")
+			} else {
+				switch e := r.(type) {
+				case error:
+					if e.Error() != "path (node) not found" {
+						t.Errorf("panic with the (%v) error", e)
+					}
+				default:
+					t.Error("didn't panic with an error")
+				}
+			}
+		}()
+
+		id := "source"
+		priority := 0
+		search := "node"
+
+		ctrl := gomock.NewController(t)
+		defer ctrl.Finish()
+
+		config, _ := NewConfig(60 * time.Second)
+		defer config.Close()
+
+		source := NewMockConfigSource(ctrl)
+		source.EXPECT().Close().Times(1)
+		source.EXPECT().Get("").Return(ConfigPartial{}).Times(1)
+		_ = config.AddSource(id, priority, source)
 
 		config.GetUInt64(search)
 	})
@@ -1272,7 +2437,7 @@ func Test_Config_GetFloat32(t *testing.T) {
 		id := "source"
 		priority := 0
 		search := "node"
-		value := float32(123)
+		value := float32(123.3)
 
 		ctrl := gomock.NewController(t)
 		defer ctrl.Finish()
@@ -1290,11 +2455,49 @@ func Test_Config_GetFloat32(t *testing.T) {
 		}
 	})
 
-	t.Run("panic if the stored value is not a float32", func(t *testing.T) {
+	t.Run("return the string conversion to float32 value", func(t *testing.T) {
 		id := "source"
 		priority := 0
 		search := "node"
-		invalidValue := "123"
+		value := "123.3"
+		expected := float32(123.3)
+
+		ctrl := gomock.NewController(t)
+		defer ctrl.Finish()
+
+		config, _ := NewConfig(60 * time.Second)
+		defer config.Close()
+
+		source := NewMockConfigSource(ctrl)
+		source.EXPECT().Close().Times(1)
+		source.EXPECT().Get("").Return(ConfigPartial{search: value}).Times(1)
+		_ = config.AddSource(id, priority, source)
+
+		if result := config.GetFloat32(search); result != expected {
+			t.Errorf("returned (%v) expected (%v)", result, expected)
+		}
+	})
+
+	t.Run("panic if the stored value is a string that cannot be converted to float32", func(t *testing.T) {
+		defer func() {
+			if r := recover(); r == nil {
+				t.Error("did not panic")
+			} else {
+				switch e := r.(type) {
+				case error:
+					if e.Error() != "strconv.ParseFloat: parsing \"non float value\": invalid syntax" {
+						t.Errorf("panic with the (%v) error", e)
+					}
+				default:
+					t.Error("didn't panic with an error")
+				}
+			}
+		}()
+
+		id := "source"
+		priority := 0
+		search := "node"
+		invalidValue := "non float value"
 
 		ctrl := gomock.NewController(t)
 		defer ctrl.Finish()
@@ -1307,11 +2510,74 @@ func Test_Config_GetFloat32(t *testing.T) {
 		source.EXPECT().Get("").Return(ConfigPartial{search: invalidValue}).Times(1)
 		_ = config.AddSource(id, priority, source)
 
+		config.GetFloat32(search)
+	})
+
+	t.Run("panic if the stored value isn't a float32 nor a string", func(t *testing.T) {
 		defer func() {
 			if r := recover(); r == nil {
 				t.Error("did not panic")
+			} else {
+				switch e := r.(type) {
+				case error:
+					if e.Error() != "unable to convert ([data]) from path (node) into float32" {
+						t.Errorf("panic with the (%v) error", e)
+					}
+				default:
+					t.Error("didn't panic with an error")
+				}
 			}
 		}()
+
+		id := "source"
+		priority := 0
+		search := "node"
+		invalidValue := []string{"data"}
+
+		ctrl := gomock.NewController(t)
+		defer ctrl.Finish()
+
+		config, _ := NewConfig(60 * time.Second)
+		defer config.Close()
+
+		source := NewMockConfigSource(ctrl)
+		source.EXPECT().Close().Times(1)
+		source.EXPECT().Get("").Return(ConfigPartial{search: invalidValue}).Times(1)
+		_ = config.AddSource(id, priority, source)
+
+		config.GetFloat32(search)
+	})
+
+	t.Run("panic if the path doesn't exists and there was no default value given", func(t *testing.T) {
+		defer func() {
+			if r := recover(); r == nil {
+				t.Error("did not panic")
+			} else {
+				switch e := r.(type) {
+				case error:
+					if e.Error() != "path (node) not found" {
+						t.Errorf("panic with the (%v) error", e)
+					}
+				default:
+					t.Error("didn't panic with an error")
+				}
+			}
+		}()
+
+		id := "source"
+		priority := 0
+		search := "node"
+
+		ctrl := gomock.NewController(t)
+		defer ctrl.Finish()
+
+		config, _ := NewConfig(60 * time.Second)
+		defer config.Close()
+
+		source := NewMockConfigSource(ctrl)
+		source.EXPECT().Close().Times(1)
+		source.EXPECT().Get("").Return(ConfigPartial{}).Times(1)
+		_ = config.AddSource(id, priority, source)
 
 		config.GetFloat32(search)
 	})
@@ -1320,7 +2586,7 @@ func Test_Config_GetFloat32(t *testing.T) {
 		id := "source"
 		priority := 0
 		search := "node"
-		defValue := float32(123)
+		defValue := float32(123.3)
 
 		ctrl := gomock.NewController(t)
 		defer ctrl.Finish()
@@ -1364,7 +2630,7 @@ func Test_Config_GetFloat64(t *testing.T) {
 		id := "source"
 		priority := 0
 		search := "node"
-		value := float64(123)
+		value := float64(123.3)
 
 		ctrl := gomock.NewController(t)
 		defer ctrl.Finish()
@@ -1382,11 +2648,49 @@ func Test_Config_GetFloat64(t *testing.T) {
 		}
 	})
 
-	t.Run("panic if the stored value is not a float64", func(t *testing.T) {
+	t.Run("return the string conversion to float64 value", func(t *testing.T) {
 		id := "source"
 		priority := 0
 		search := "node"
-		invalidValue := "123"
+		value := "123.3"
+		expected := float64(123.3)
+
+		ctrl := gomock.NewController(t)
+		defer ctrl.Finish()
+
+		config, _ := NewConfig(60 * time.Second)
+		defer config.Close()
+
+		source := NewMockConfigSource(ctrl)
+		source.EXPECT().Close().Times(1)
+		source.EXPECT().Get("").Return(ConfigPartial{search: value}).Times(1)
+		_ = config.AddSource(id, priority, source)
+
+		if result := config.GetFloat64(search); result != expected {
+			t.Errorf("returned (%v) expected (%v)", result, expected)
+		}
+	})
+
+	t.Run("panic if the stored value is a string that cannot be converted to float64", func(t *testing.T) {
+		defer func() {
+			if r := recover(); r == nil {
+				t.Error("did not panic")
+			} else {
+				switch e := r.(type) {
+				case error:
+					if e.Error() != "strconv.ParseFloat: parsing \"non float value\": invalid syntax" {
+						t.Errorf("panic with the (%v) error", e)
+					}
+				default:
+					t.Error("didn't panic with an error")
+				}
+			}
+		}()
+
+		id := "source"
+		priority := 0
+		search := "node"
+		invalidValue := "non float value"
 
 		ctrl := gomock.NewController(t)
 		defer ctrl.Finish()
@@ -1399,11 +2703,74 @@ func Test_Config_GetFloat64(t *testing.T) {
 		source.EXPECT().Get("").Return(ConfigPartial{search: invalidValue}).Times(1)
 		_ = config.AddSource(id, priority, source)
 
+		config.GetFloat64(search)
+	})
+
+	t.Run("panic if the stored value isn't a float64 nor a string", func(t *testing.T) {
 		defer func() {
 			if r := recover(); r == nil {
 				t.Error("did not panic")
+			} else {
+				switch e := r.(type) {
+				case error:
+					if e.Error() != "unable to convert ([data]) from path (node) into float64" {
+						t.Errorf("panic with the (%v) error", e)
+					}
+				default:
+					t.Error("didn't panic with an error")
+				}
 			}
 		}()
+
+		id := "source"
+		priority := 0
+		search := "node"
+		invalidValue := []string{"data"}
+
+		ctrl := gomock.NewController(t)
+		defer ctrl.Finish()
+
+		config, _ := NewConfig(60 * time.Second)
+		defer config.Close()
+
+		source := NewMockConfigSource(ctrl)
+		source.EXPECT().Close().Times(1)
+		source.EXPECT().Get("").Return(ConfigPartial{search: invalidValue}).Times(1)
+		_ = config.AddSource(id, priority, source)
+
+		config.GetFloat64(search)
+	})
+
+	t.Run("panic if the path doesn't exists and there was no default value given", func(t *testing.T) {
+		defer func() {
+			if r := recover(); r == nil {
+				t.Error("did not panic")
+			} else {
+				switch e := r.(type) {
+				case error:
+					if e.Error() != "path (node) not found" {
+						t.Errorf("panic with the (%v) error", e)
+					}
+				default:
+					t.Error("didn't panic with an error")
+				}
+			}
+		}()
+
+		id := "source"
+		priority := 0
+		search := "node"
+
+		ctrl := gomock.NewController(t)
+		defer ctrl.Finish()
+
+		config, _ := NewConfig(60 * time.Second)
+		defer config.Close()
+
+		source := NewMockConfigSource(ctrl)
+		source.EXPECT().Close().Times(1)
+		source.EXPECT().Get("").Return(ConfigPartial{}).Times(1)
+		_ = config.AddSource(id, priority, source)
 
 		config.GetFloat64(search)
 	})
@@ -1412,7 +2779,7 @@ func Test_Config_GetFloat64(t *testing.T) {
 		id := "source"
 		priority := 0
 		search := "node"
-		defValue := float64(123)
+		defValue := float64(123.3)
 
 		ctrl := gomock.NewController(t)
 		defer ctrl.Finish()
@@ -1474,11 +2841,49 @@ func Test_Config_GetComplex64(t *testing.T) {
 		}
 	})
 
-	t.Run("panic if the stored value is not a complex64", func(t *testing.T) {
+	t.Run("return the string conversion to complex64 value", func(t *testing.T) {
 		id := "source"
 		priority := 0
 		search := "node"
-		invalidValue := "123"
+		value := "123.3"
+		expected := complex64(123.3)
+
+		ctrl := gomock.NewController(t)
+		defer ctrl.Finish()
+
+		config, _ := NewConfig(60 * time.Second)
+		defer config.Close()
+
+		source := NewMockConfigSource(ctrl)
+		source.EXPECT().Close().Times(1)
+		source.EXPECT().Get("").Return(ConfigPartial{search: value}).Times(1)
+		_ = config.AddSource(id, priority, source)
+
+		if result := config.GetComplex64(search); result != expected {
+			t.Errorf("returned (%v) expected (%v)", result, expected)
+		}
+	})
+
+	t.Run("panic if the stored value is a string that cannot be converted to complex64", func(t *testing.T) {
+		defer func() {
+			if r := recover(); r == nil {
+				t.Error("did not panic")
+			} else {
+				switch e := r.(type) {
+				case error:
+					if e.Error() != "strconv.ParseComplex: parsing \"non complex value\": invalid syntax" {
+						t.Errorf("panic with the (%v) error", e)
+					}
+				default:
+					t.Error("didn't panic with an error")
+				}
+			}
+		}()
+
+		id := "source"
+		priority := 0
+		search := "node"
+		invalidValue := "non complex value"
 
 		ctrl := gomock.NewController(t)
 		defer ctrl.Finish()
@@ -1491,11 +2896,74 @@ func Test_Config_GetComplex64(t *testing.T) {
 		source.EXPECT().Get("").Return(ConfigPartial{search: invalidValue}).Times(1)
 		_ = config.AddSource(id, priority, source)
 
+		config.GetComplex64(search)
+	})
+
+	t.Run("panic if the stored value isn't a complex64 nor a string", func(t *testing.T) {
 		defer func() {
 			if r := recover(); r == nil {
 				t.Error("did not panic")
+			} else {
+				switch e := r.(type) {
+				case error:
+					if e.Error() != "unable to convert ([data]) from path (node) into complex64" {
+						t.Errorf("panic with the (%v) error", e)
+					}
+				default:
+					t.Error("didn't panic with an error")
+				}
 			}
 		}()
+
+		id := "source"
+		priority := 0
+		search := "node"
+		invalidValue := []string{"data"}
+
+		ctrl := gomock.NewController(t)
+		defer ctrl.Finish()
+
+		config, _ := NewConfig(60 * time.Second)
+		defer config.Close()
+
+		source := NewMockConfigSource(ctrl)
+		source.EXPECT().Close().Times(1)
+		source.EXPECT().Get("").Return(ConfigPartial{search: invalidValue}).Times(1)
+		_ = config.AddSource(id, priority, source)
+
+		config.GetComplex64(search)
+	})
+
+	t.Run("panic if the path doesn't exists and there was no default value given", func(t *testing.T) {
+		defer func() {
+			if r := recover(); r == nil {
+				t.Error("did not panic")
+			} else {
+				switch e := r.(type) {
+				case error:
+					if e.Error() != "path (node) not found" {
+						t.Errorf("panic with the (%v) error", e)
+					}
+				default:
+					t.Error("didn't panic with an error")
+				}
+			}
+		}()
+
+		id := "source"
+		priority := 0
+		search := "node"
+
+		ctrl := gomock.NewController(t)
+		defer ctrl.Finish()
+
+		config, _ := NewConfig(60 * time.Second)
+		defer config.Close()
+
+		source := NewMockConfigSource(ctrl)
+		source.EXPECT().Close().Times(1)
+		source.EXPECT().Get("").Return(ConfigPartial{}).Times(1)
+		_ = config.AddSource(id, priority, source)
 
 		config.GetComplex64(search)
 	})
@@ -1566,11 +3034,49 @@ func Test_Config_GetComplex128(t *testing.T) {
 		}
 	})
 
-	t.Run("panic if the stored value is not a complex128", func(t *testing.T) {
+	t.Run("return the string conversion to complex128 value", func(t *testing.T) {
 		id := "source"
 		priority := 0
 		search := "node"
-		invalidValue := "123"
+		value := "123.3"
+		expected := complex128(123.3)
+
+		ctrl := gomock.NewController(t)
+		defer ctrl.Finish()
+
+		config, _ := NewConfig(60 * time.Second)
+		defer config.Close()
+
+		source := NewMockConfigSource(ctrl)
+		source.EXPECT().Close().Times(1)
+		source.EXPECT().Get("").Return(ConfigPartial{search: value}).Times(1)
+		_ = config.AddSource(id, priority, source)
+
+		if result := config.GetComplex128(search); result != expected {
+			t.Errorf("returned (%v) expected (%v)", result, expected)
+		}
+	})
+
+	t.Run("panic if the stored value is a string that cannot be converted to complex128", func(t *testing.T) {
+		defer func() {
+			if r := recover(); r == nil {
+				t.Error("did not panic")
+			} else {
+				switch e := r.(type) {
+				case error:
+					if e.Error() != "strconv.ParseComplex: parsing \"non complex value\": invalid syntax" {
+						t.Errorf("panic with the (%v) error", e)
+					}
+				default:
+					t.Error("didn't panic with an error")
+				}
+			}
+		}()
+
+		id := "source"
+		priority := 0
+		search := "node"
+		invalidValue := "non complex value"
 
 		ctrl := gomock.NewController(t)
 		defer ctrl.Finish()
@@ -1583,11 +3089,74 @@ func Test_Config_GetComplex128(t *testing.T) {
 		source.EXPECT().Get("").Return(ConfigPartial{search: invalidValue}).Times(1)
 		_ = config.AddSource(id, priority, source)
 
+		config.GetComplex128(search)
+	})
+
+	t.Run("panic if the stored value isn't a complex128 nor a string", func(t *testing.T) {
 		defer func() {
 			if r := recover(); r == nil {
 				t.Error("did not panic")
+			} else {
+				switch e := r.(type) {
+				case error:
+					if e.Error() != "unable to convert ([data]) from path (node) into complex128" {
+						t.Errorf("panic with the (%v) error", e)
+					}
+				default:
+					t.Error("didn't panic with an error")
+				}
 			}
 		}()
+
+		id := "source"
+		priority := 0
+		search := "node"
+		invalidValue := []string{"data"}
+
+		ctrl := gomock.NewController(t)
+		defer ctrl.Finish()
+
+		config, _ := NewConfig(60 * time.Second)
+		defer config.Close()
+
+		source := NewMockConfigSource(ctrl)
+		source.EXPECT().Close().Times(1)
+		source.EXPECT().Get("").Return(ConfigPartial{search: invalidValue}).Times(1)
+		_ = config.AddSource(id, priority, source)
+
+		config.GetComplex128(search)
+	})
+
+	t.Run("panic if the path doesn't exists and there was no default value given", func(t *testing.T) {
+		defer func() {
+			if r := recover(); r == nil {
+				t.Error("did not panic")
+			} else {
+				switch e := r.(type) {
+				case error:
+					if e.Error() != "path (node) not found" {
+						t.Errorf("panic with the (%v) error", e)
+					}
+				default:
+					t.Error("didn't panic with an error")
+				}
+			}
+		}()
+
+		id := "source"
+		priority := 0
+		search := "node"
+
+		ctrl := gomock.NewController(t)
+		defer ctrl.Finish()
+
+		config, _ := NewConfig(60 * time.Second)
+		defer config.Close()
+
+		source := NewMockConfigSource(ctrl)
+		source.EXPECT().Close().Times(1)
+		source.EXPECT().Get("").Return(ConfigPartial{}).Times(1)
+		_ = config.AddSource(id, priority, source)
 
 		config.GetComplex128(search)
 	})
@@ -1658,11 +3227,49 @@ func Test_Config_GetRune(t *testing.T) {
 		}
 	})
 
-	t.Run("panic if the stored value is not a rune", func(t *testing.T) {
+	t.Run("return the string conversion to rune value", func(t *testing.T) {
 		id := "source"
 		priority := 0
 		search := "node"
-		invalidValue := "123"
+		value := "123.3"
+		expected := '1'
+
+		ctrl := gomock.NewController(t)
+		defer ctrl.Finish()
+
+		config, _ := NewConfig(60 * time.Second)
+		defer config.Close()
+
+		source := NewMockConfigSource(ctrl)
+		source.EXPECT().Close().Times(1)
+		source.EXPECT().Get("").Return(ConfigPartial{search: value}).Times(1)
+		_ = config.AddSource(id, priority, source)
+
+		if result := config.GetRune(search); result != expected {
+			t.Errorf("returned (%v) expected (%v)", result, expected)
+		}
+	})
+
+	t.Run("panic if the stored value isn't a rune nor a string", func(t *testing.T) {
+		defer func() {
+			if r := recover(); r == nil {
+				t.Error("did not panic")
+			} else {
+				switch e := r.(type) {
+				case error:
+					if e.Error() != "unable to convert ([data]) from path (node) into rune" {
+						t.Errorf("panic with the (%v) error", e)
+					}
+				default:
+					t.Error("didn't panic with an error")
+				}
+			}
+		}()
+
+		id := "source"
+		priority := 0
+		search := "node"
+		invalidValue := []string{"data"}
 
 		ctrl := gomock.NewController(t)
 		defer ctrl.Finish()
@@ -1675,11 +3282,39 @@ func Test_Config_GetRune(t *testing.T) {
 		source.EXPECT().Get("").Return(ConfigPartial{search: invalidValue}).Times(1)
 		_ = config.AddSource(id, priority, source)
 
+		config.GetRune(search)
+	})
+
+	t.Run("panic if the path doesn't exists and there was no default value given", func(t *testing.T) {
 		defer func() {
 			if r := recover(); r == nil {
 				t.Error("did not panic")
+			} else {
+				switch e := r.(type) {
+				case error:
+					if e.Error() != "path (node) not found" {
+						t.Errorf("panic with the (%v) error", e)
+					}
+				default:
+					t.Error("didn't panic with an error")
+				}
 			}
 		}()
+
+		id := "source"
+		priority := 0
+		search := "node"
+
+		ctrl := gomock.NewController(t)
+		defer ctrl.Finish()
+
+		config, _ := NewConfig(60 * time.Second)
+		defer config.Close()
+
+		source := NewMockConfigSource(ctrl)
+		source.EXPECT().Close().Times(1)
+		source.EXPECT().Get("").Return(ConfigPartial{}).Times(1)
+		_ = config.AddSource(id, priority, source)
 
 		config.GetRune(search)
 	})

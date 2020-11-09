@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"reflect"
 	"sort"
+	"strconv"
 	"sync"
 	"time"
 )
@@ -118,10 +119,28 @@ func (c *Config) GetBool(path string, def ...bool) bool {
 		panic(fmt.Errorf("nil pointer receiver"))
 	}
 
+	var value interface{}
 	if len(def) > 0 {
-		return c.Get(path, def[0]).(bool)
+		value = c.Get(path, def[0])
+	} else {
+		value = c.Get(path)
 	}
-	return c.Get(path).(bool)
+
+	switch value.(type) {
+	case nil:
+		panic(fmt.Errorf("path (%s) not found", path))
+	case bool:
+		return value.(bool)
+	case string:
+		v, err := strconv.ParseBool(value.(string))
+		if err != nil {
+			panic(err)
+		}
+		return v
+	default:
+	}
+
+	panic(fmt.Errorf("unable to convert (%v) from path (%s) into bool", value, path))
 }
 
 // GetInt will retrieve a configuration value loaded from a source as a int.
@@ -130,10 +149,28 @@ func (c *Config) GetInt(path string, def ...int) int {
 		panic(fmt.Errorf("nil pointer receiver"))
 	}
 
+	var value interface{}
 	if len(def) > 0 {
-		return c.Get(path, def[0]).(int)
+		value = c.Get(path, def[0])
+	} else {
+		value = c.Get(path)
 	}
-	return c.Get(path).(int)
+
+	switch value.(type) {
+	case nil:
+		panic(fmt.Errorf("path (%s) not found", path))
+	case int:
+		return value.(int)
+	case string:
+		v, err := strconv.ParseInt(value.(string), 10, 0)
+		if err != nil {
+			panic(err)
+		}
+		return int(v)
+	default:
+	}
+
+	panic(fmt.Errorf("unable to convert (%v) from path (%s) into int", value, path))
 }
 
 // GetInt8 will retrieve a configuration value loaded from a source as a int8.
@@ -142,10 +179,28 @@ func (c *Config) GetInt8(path string, def ...int8) int8 {
 		panic(fmt.Errorf("nil pointer receiver"))
 	}
 
+	var value interface{}
 	if len(def) > 0 {
-		return c.Get(path, def[0]).(int8)
+		value = c.Get(path, def[0])
+	} else {
+		value = c.Get(path)
 	}
-	return c.Get(path).(int8)
+
+	switch value.(type) {
+	case nil:
+		panic(fmt.Errorf("path (%s) not found", path))
+	case int8:
+		return value.(int8)
+	case string:
+		v, err := strconv.ParseInt(value.(string), 10, 8)
+		if err != nil {
+			panic(err)
+		}
+		return int8(v)
+	default:
+	}
+
+	panic(fmt.Errorf("unable to convert (%v) from path (%s) into int8", value, path))
 }
 
 // GetInt16 will retrieve a configuration value loaded from a source as a int16.
@@ -154,10 +209,28 @@ func (c *Config) GetInt16(path string, def ...int16) int16 {
 		panic(fmt.Errorf("nil pointer receiver"))
 	}
 
+	var value interface{}
 	if len(def) > 0 {
-		return c.Get(path, def[0]).(int16)
+		value = c.Get(path, def[0])
+	} else {
+		value = c.Get(path)
 	}
-	return c.Get(path).(int16)
+
+	switch value.(type) {
+	case nil:
+		panic(fmt.Errorf("path (%s) not found", path))
+	case int16:
+		return value.(int16)
+	case string:
+		v, err := strconv.ParseInt(value.(string), 10, 16)
+		if err != nil {
+			panic(err)
+		}
+		return int16(v)
+	default:
+	}
+
+	panic(fmt.Errorf("unable to convert (%v) from path (%s) into int16", value, path))
 }
 
 // GetInt32 will retrieve a configuration value loaded from a source as a int32.
@@ -166,10 +239,28 @@ func (c *Config) GetInt32(path string, def ...int32) int32 {
 		panic(fmt.Errorf("nil pointer receiver"))
 	}
 
+	var value interface{}
 	if len(def) > 0 {
-		return c.Get(path, def[0]).(int32)
+		value = c.Get(path, def[0])
+	} else {
+		value = c.Get(path)
 	}
-	return c.Get(path).(int32)
+
+	switch value.(type) {
+	case nil:
+		panic(fmt.Errorf("path (%s) not found", path))
+	case int32:
+		return value.(int32)
+	case string:
+		v, err := strconv.ParseInt(value.(string), 10, 32)
+		if err != nil {
+			panic(err)
+		}
+		return int32(v)
+	default:
+	}
+
+	panic(fmt.Errorf("unable to convert (%v) from path (%s) into int32", value, path))
 }
 
 // GetInt64 will retrieve a configuration value loaded from a source as a int64.
@@ -178,10 +269,28 @@ func (c *Config) GetInt64(path string, def ...int64) int64 {
 		panic(fmt.Errorf("nil pointer receiver"))
 	}
 
+	var value interface{}
 	if len(def) > 0 {
-		return c.Get(path, def[0]).(int64)
+		value = c.Get(path, def[0])
+	} else {
+		value = c.Get(path)
 	}
-	return c.Get(path).(int64)
+
+	switch value.(type) {
+	case nil:
+		panic(fmt.Errorf("path (%s) not found", path))
+	case int64:
+		return value.(int64)
+	case string:
+		v, err := strconv.ParseInt(value.(string), 10, 64)
+		if err != nil {
+			panic(err)
+		}
+		return v
+	default:
+	}
+
+	panic(fmt.Errorf("unable to convert (%v) from path (%s) into int64", value, path))
 }
 
 // GetUInt will retrieve a configuration value loaded from a source as a uint.
@@ -190,10 +299,28 @@ func (c *Config) GetUInt(path string, def ...uint) uint {
 		panic(fmt.Errorf("nil pointer receiver"))
 	}
 
+	var value interface{}
 	if len(def) > 0 {
-		return c.Get(path, def[0]).(uint)
+		value = c.Get(path, def[0])
+	} else {
+		value = c.Get(path)
 	}
-	return c.Get(path).(uint)
+
+	switch value.(type) {
+	case nil:
+		panic(fmt.Errorf("path (%s) not found", path))
+	case uint:
+		return value.(uint)
+	case string:
+		v, err := strconv.ParseUint(value.(string), 10, 0)
+		if err != nil {
+			panic(err)
+		}
+		return uint(v)
+	default:
+	}
+
+	panic(fmt.Errorf("unable to convert (%v) from path (%s) into uint", value, path))
 }
 
 // GetUInt8 will retrieve a configuration value loaded from a source as a uint8.
@@ -202,10 +329,28 @@ func (c *Config) GetUInt8(path string, def ...uint8) uint8 {
 		panic(fmt.Errorf("nil pointer receiver"))
 	}
 
+	var value interface{}
 	if len(def) > 0 {
-		return c.Get(path, def[0]).(uint8)
+		value = c.Get(path, def[0])
+	} else {
+		value = c.Get(path)
 	}
-	return c.Get(path).(uint8)
+
+	switch value.(type) {
+	case nil:
+		panic(fmt.Errorf("path (%s) not found", path))
+	case uint8:
+		return value.(uint8)
+	case string:
+		v, err := strconv.ParseUint(value.(string), 10, 8)
+		if err != nil {
+			panic(err)
+		}
+		return uint8(v)
+	default:
+	}
+
+	panic(fmt.Errorf("unable to convert (%v) from path (%s) into uint8", value, path))
 }
 
 // GetUInt16 will retrieve a configuration value loaded from a
@@ -215,10 +360,28 @@ func (c *Config) GetUInt16(path string, def ...uint16) uint16 {
 		panic(fmt.Errorf("nil pointer receiver"))
 	}
 
+	var value interface{}
 	if len(def) > 0 {
-		return c.Get(path, def[0]).(uint16)
+		value = c.Get(path, def[0])
+	} else {
+		value = c.Get(path)
 	}
-	return c.Get(path).(uint16)
+
+	switch value.(type) {
+	case nil:
+		panic(fmt.Errorf("path (%s) not found", path))
+	case uint16:
+		return value.(uint16)
+	case string:
+		v, err := strconv.ParseUint(value.(string), 10, 16)
+		if err != nil {
+			panic(err)
+		}
+		return uint16(v)
+	default:
+	}
+
+	panic(fmt.Errorf("unable to convert (%v) from path (%s) into uint16", value, path))
 }
 
 // GetUInt32 will retrieve a configuration value loaded from a
@@ -228,10 +391,28 @@ func (c *Config) GetUInt32(path string, def ...uint32) uint32 {
 		panic(fmt.Errorf("nil pointer receiver"))
 	}
 
+	var value interface{}
 	if len(def) > 0 {
-		return c.Get(path, def[0]).(uint32)
+		value = c.Get(path, def[0])
+	} else {
+		value = c.Get(path)
 	}
-	return c.Get(path).(uint32)
+
+	switch value.(type) {
+	case nil:
+		panic(fmt.Errorf("path (%s) not found", path))
+	case uint32:
+		return value.(uint32)
+	case string:
+		v, err := strconv.ParseUint(value.(string), 10, 32)
+		if err != nil {
+			panic(err)
+		}
+		return uint32(v)
+	default:
+	}
+
+	panic(fmt.Errorf("unable to convert (%v) from path (%s) into uint32", value, path))
 }
 
 // GetUInt64 will retrieve a configuration value loaded from a
@@ -241,10 +422,28 @@ func (c *Config) GetUInt64(path string, def ...uint64) uint64 {
 		panic(fmt.Errorf("nil pointer receiver"))
 	}
 
+	var value interface{}
 	if len(def) > 0 {
-		return c.Get(path, def[0]).(uint64)
+		value = c.Get(path, def[0])
+	} else {
+		value = c.Get(path)
 	}
-	return c.Get(path).(uint64)
+
+	switch value.(type) {
+	case nil:
+		panic(fmt.Errorf("path (%s) not found", path))
+	case uint64:
+		return value.(uint64)
+	case string:
+		v, err := strconv.ParseUint(value.(string), 10, 64)
+		if err != nil {
+			panic(err)
+		}
+		return v
+	default:
+	}
+
+	panic(fmt.Errorf("unable to convert (%v) from path (%s) into uint64", value, path))
 }
 
 // GetFloat32 will retrieve a configuration value loaded from a
@@ -254,10 +453,28 @@ func (c *Config) GetFloat32(path string, def ...float32) float32 {
 		panic(fmt.Errorf("nil pointer receiver"))
 	}
 
+	var value interface{}
 	if len(def) > 0 {
-		return c.Get(path, def[0]).(float32)
+		value = c.Get(path, def[0])
+	} else {
+		value = c.Get(path)
 	}
-	return c.Get(path).(float32)
+
+	switch value.(type) {
+	case nil:
+		panic(fmt.Errorf("path (%s) not found", path))
+	case float32:
+		return value.(float32)
+	case string:
+		v, err := strconv.ParseFloat(value.(string), 32)
+		if err != nil {
+			panic(err)
+		}
+		return float32(v)
+	default:
+	}
+
+	panic(fmt.Errorf("unable to convert (%v) from path (%s) into float32", value, path))
 }
 
 // GetFloat64 will retrieve a configuration value loaded from a
@@ -267,10 +484,28 @@ func (c *Config) GetFloat64(path string, def ...float64) float64 {
 		panic(fmt.Errorf("nil pointer receiver"))
 	}
 
+	var value interface{}
 	if len(def) > 0 {
-		return c.Get(path, def[0]).(float64)
+		value = c.Get(path, def[0])
+	} else {
+		value = c.Get(path)
 	}
-	return c.Get(path).(float64)
+
+	switch value.(type) {
+	case nil:
+		panic(fmt.Errorf("path (%s) not found", path))
+	case float64:
+		return value.(float64)
+	case string:
+		v, err := strconv.ParseFloat(value.(string), 64)
+		if err != nil {
+			panic(err)
+		}
+		return v
+	default:
+	}
+
+	panic(fmt.Errorf("unable to convert (%v) from path (%s) into float64", value, path))
 }
 
 // GetComplex64 will retrieve a configuration value loaded from a
@@ -280,10 +515,28 @@ func (c *Config) GetComplex64(path string, def ...complex64) complex64 {
 		panic(fmt.Errorf("nil pointer receiver"))
 	}
 
+	var value interface{}
 	if len(def) > 0 {
-		return c.Get(path, def[0]).(complex64)
+		value = c.Get(path, def[0])
+	} else {
+		value = c.Get(path)
 	}
-	return c.Get(path).(complex64)
+
+	switch value.(type) {
+	case nil:
+		panic(fmt.Errorf("path (%s) not found", path))
+	case complex64:
+		return value.(complex64)
+	case string:
+		v, err := strconv.ParseComplex(value.(string), 64)
+		if err != nil {
+			panic(err)
+		}
+		return complex64(v)
+	default:
+	}
+
+	panic(fmt.Errorf("unable to convert (%v) from path (%s) into complex64", value, path))
 }
 
 // GetComplex128 will retrieve a configuration value loaded from a
@@ -293,10 +546,28 @@ func (c *Config) GetComplex128(path string, def ...complex128) complex128 {
 		panic(fmt.Errorf("nil pointer receiver"))
 	}
 
+	var value interface{}
 	if len(def) > 0 {
-		return c.Get(path, def[0]).(complex128)
+		value = c.Get(path, def[0])
+	} else {
+		value = c.Get(path)
 	}
-	return c.Get(path).(complex128)
+
+	switch value.(type) {
+	case nil:
+		panic(fmt.Errorf("path (%s) not found", path))
+	case complex128:
+		return value.(complex128)
+	case string:
+		v, err := strconv.ParseComplex(value.(string), 128)
+		if err != nil {
+			panic(err)
+		}
+		return v
+	default:
+	}
+
+	panic(fmt.Errorf("unable to convert (%v) from path (%s) into complex128", value, path))
 }
 
 // GetRune will retrieve a configuration value loaded from a source as a rune.
@@ -305,10 +576,24 @@ func (c *Config) GetRune(path string, def ...rune) rune {
 		panic(fmt.Errorf("nil pointer receiver"))
 	}
 
+	var value interface{}
 	if len(def) > 0 {
-		return c.Get(path, def[0]).(rune)
+		value = c.Get(path, def[0])
+	} else {
+		value = c.Get(path)
 	}
-	return c.Get(path).(rune)
+
+	switch value.(type) {
+	case nil:
+		panic(fmt.Errorf("path (%s) not found", path))
+	case rune:
+		return value.(rune)
+	case string:
+		return []rune(value.(string))[0]
+	default:
+	}
+
+	panic(fmt.Errorf("unable to convert (%v) from path (%s) into rune", value, path))
 }
 
 // GetString will retrieve a configuration value loaded from a
